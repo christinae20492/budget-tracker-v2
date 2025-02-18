@@ -15,6 +15,7 @@ import {
   Envelope,
 } from "@/app/utils/localStorage";
 import ToggleSwitch from "@/app/components/ui/ToggleSwitch";
+import Layout from "@/app/components/ui/Layout";
 
 export default function ExpenseCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,7 +87,7 @@ export default function ExpenseCalendar() {
       id: String(income.id),
       title: `${income.source} - $${income.amount}`,
       start: income.date,
-      backgroundColor: "#4DB533",
+      backgroundColor: "#239312",
     }));
 
     if (view === "expenses") return expenseEvents;
@@ -95,21 +96,10 @@ export default function ExpenseCalendar() {
   }, [view, expenses, incomes, envelopes]);
 
   return (
-    <div className="mx-auto my-0 max-w-screen-2xl">
-      <Head>
-        <title>Expense Calendar</title>
-        <meta
-          name="description"
-          content="Track your income and expenses with a calendar view."
-        />
-      </Head>
-
-      <div>
-        <FloatingMenu />
+    <Layout>
+      <div className="my-6">
         <ToggleSwitch onToggle={handleToggle} />
       </div>
-
-      <h1 className="text-center text-xl font-bold">Expense Calendar</h1>
 
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
@@ -130,6 +120,6 @@ export default function ExpenseCalendar() {
         selectedDate={selectedDate}
         view={view}
       />
-    </div>
+    </Layout>
   );
 }
