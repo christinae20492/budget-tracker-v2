@@ -57,14 +57,11 @@ export default function AddIncome() {
   return (
     <>
       <Head>
-        <title>Add Income</title>
-        <meta
-          name="description"
-          content="Add a new source of income to your budget tracker."
-        />
+        <title>Add Income for {date}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+      <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
         <h2 className="text-center">Add Income</h2>
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
@@ -73,7 +70,7 @@ export default function AddIncome() {
               type="text"
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              className="block w-full p-2 border border-gray-300"
+              className="block w-full p-2 dark:bg-slate-900 dark:text-white border border-gray-300"
               required
             />
           </div>
@@ -84,7 +81,7 @@ export default function AddIncome() {
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="block w-full p-2 border border-gray-300"
+              className="block w-full p-2 dark:bg-slate-900 dark:text-white border border-gray-300"
             />
           </div>
           <div>
@@ -93,7 +90,7 @@ export default function AddIncome() {
               type="number"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="block w-full p-2 border border-gray-300"
+              className="block w-full p-2 dark:bg-slate-900 dark:text-white border border-gray-300"
               required
             />
           </div>
@@ -103,7 +100,7 @@ export default function AddIncome() {
               type="number"
               value={savings}
               onChange={(e) => setSavings(Number(e.target.value))}
-              className="block w-full p-2 border border-gray-300"
+              className="block w-full p-2 dark:bg-slate-900 dark:text-white border border-gray-300"
             />
           </div>
           <div>
@@ -112,7 +109,7 @@ export default function AddIncome() {
               type="number"
               value={investments}
               onChange={(e) => setInvestments(Number(e.target.value))}
-              className="block w-full p-2 border border-gray-300"
+              className="block w-full p-2 dark:bg-slate-900 dark:text-white border border-gray-300"
             />
           </div>
           <div>

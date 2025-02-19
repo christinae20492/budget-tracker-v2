@@ -34,17 +34,14 @@ export default function EnvelopeDetails() {
     const expenseList = currentEnvelope.expenses || [];
     setExpenses(expenseList);
 
-    // Calculate total spent
     const total = expenseList.reduce((sum, expense) => sum + expense.amount, 0);
     setTotalSpent(total);
 
-    // Warn if budget exceeded
     if (currentEnvelope.budget) {
     if (currentEnvelope.fixed && total > currentEnvelope.budget) {
       warnToast("Warning: Budget exceeded for this fixed envelope!");
     }}
 
-    // Find most frequent expense location if there are expenses
     if (expenseList.length > 0) {
       const locationFrequency: Record<string, number> = {};
       expenseList.forEach((expense) => {
@@ -70,21 +67,23 @@ export default function EnvelopeDetails() {
         <meta name="description" content={`Details for ${envelopeData.title}`} />
       </Head>
 
-      <div className="max-w-lg mx-auto mt-8 p-4 bg-white shadow-md rounded-lg">
-        <h1 className="text-center text-xl font-semibold">{envelopeData.title} Details</h1>
-        <p className="text-gray-600">Budget: <strong>${envelopeData.budget}</strong></p>
-        <p className="text-gray-600">Total Spent: <strong>${totalSpent.toFixed(2)}</strong></p>
+      <div className="mx-auto text-center">
+        <h1 className="header">{envelopeData.title} Details</h1>
+        <h2 className="text-gray-600">Budget: <strong>${envelopeData.budget}</strong></h2>
+        <h2 className="text-gray-600">Total Spent: <strong>${totalSpent.toFixed(2)}</strong></h2>
 
         <h2 className="mt-4 text-lg font-semibold">Expenses</h2>
         {expenses.length > 0 ? (
           <ul className="list-disc pl-5">
             {expenses.map((expense, index) => (
+              <span>
               <li
                 key={index}
-                className={expense.location === mostFrequentLocation ? "font-bold text-blue-500" : ""}
+                className={`exp-inc-item ${expense.location === mostFrequentLocation ? "font-bold text-blue-500" : ""}`}
               >
                 {expense.location}: ${expense.amount}
               </li>
+              </span>
             ))}
           </ul>
         ) : (

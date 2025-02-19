@@ -89,13 +89,17 @@ export function getMonthlyExpenditureDetails(
     currentMonth,
     currentYear
   );
-  const lastMonthExpenses = filterExpenseByMonth(expenses, lastMonth, lastYear);
+  const lastMonthExpenses = filterExpenseByMonth(
+    expenses,
+    lastMonth,
+    currentYear
+  );
   const thisMonthIncomes = filterIncomeByMonth(
     incomes,
     currentMonth,
     currentYear
   );
-  const lastMonthIncomes = filterIncomeByMonth(incomes, lastMonth, lastYear);
+  const lastMonthIncomes = filterIncomeByMonth(incomes, lastMonth, currentYear);
 
   const totalSpendingThisMonth = thisMonthExpenses.reduce(
     (sum, expense) => sum + (expense.amount || 0),
@@ -176,9 +180,10 @@ export function getMonthlyExpenditureDetails(
 
 export function getYearlyExpenditureDetails(
   incomes: Income[],
-  expenses: Expense[]
+  expenses: Expense[],
+  year: number
 ) {
-  const currentYear = new Date().getFullYear();
+  const currentYear = year;
 
   const filterByYear = <T extends { date: string }>(data: T[], year: number) =>
     data.filter((item) => new Date(item.date).getFullYear() === year);
@@ -195,6 +200,23 @@ export function getYearlyExpenditureDetails(
     0
   );
   const spendingDifference = incomeTotals - expenseTotals;
+
+  const monthlyIncome = new Array(12).fill(0);
+  const monthlyExpenses = new Array(12).fill(0);
+
+  incomes.forEach((income) => {
+    const date = new Date(income.date);
+    if (date.getFullYear() === year) {
+      monthlyIncome[date.getMonth()] += income.amount;
+    }
+  });
+
+  expenses.forEach((expense) => {
+    const date = new Date(expense.date);
+    if (date.getFullYear() === year) {
+      monthlyExpenses[date.getMonth()] += expense.amount;
+    }
+  });
 
   const mostSpentEnvelope = yearlyExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
@@ -227,6 +249,8 @@ export function getYearlyExpenditureDetails(
     highestEnvelope,
     highestAmount,
     frequentEnvelope,
+    monthlyExpenses,
+    monthlyIncome
   };
 }
 

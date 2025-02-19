@@ -9,6 +9,7 @@ import {
   Expense,
   Income,
 } from "@/app/utils/localStorage";
+import Layout from "@/app/components/ui/Layout";
 
 export default function DayDetails() {
   const router = useRouter();
@@ -45,54 +46,64 @@ export default function DayDetails() {
   if (!date) return <p>Loading...</p>;
 
   return (
-    <>
+    <Layout>
       <Head>
-        <title>Day's Details</title>
-        <meta name="description" content="Details for the selected day." />
+        <title>Day's Details - {date}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <div className="details-page">
-        <h1>Details for {date}</h1>
+        <h1 className="header">{date}</h1>
 
-        <h2>Expenses</h2>
-        <ul>
-          {expenses.length > 0 ? (
-            expenses.map((expense) => (
-              <li key={expense.id}>
-                {expense.location} - ${expense.amount} (
-                {expense.envelope || "No Title"})
-                <button
-                  onClick={() => handleDeleteExpense(expense.id)}
-                  className="text-red-500 ml-2"
-                >
-                  Delete
-                </button>
-              </li>
-            ))
-          ) : (
-            <p>No expenses recorded.</p>
-          )}
-        </ul>
+        <div>
+          <h2 className="header">Expenses</h2>
+          <ul className="text-center mx-auto">
+            {expenses.length > 0 ? (
+              expenses.map((expense) => (
+                <span>
+                  <li key={expense.id}
+                  className="exp-inc-item">
+                    {expense.location} - ${expense.amount} (
+                    {expense.envelope || "No Title"})
+                  </li>
+                  <button
+                    onClick={() => handleDeleteExpense(expense.id)}
+                    className="exp-inc-btn"
+                  >
+                    Delete
+                  </button>
+                </span>
+              ))
+            ) : (
+              <p>No expenses recorded.</p>
+            )}
+          </ul>
+        </div>
 
-        <h2>Income</h2>
-        <ul>
-          {incomes.length > 0 ? (
-            incomes.map((income) => (
-              <li key={income.id}>
-                {income.source} - ${income.amount}
-                <button
-                  onClick={() => handleDeleteIncome(income.id)}
-                  className="text-red-500 ml-2"
-                >
-                  Delete
-                </button>
-              </li>
-            ))
-          ) : (
-            <p>No income recorded.</p>
-          )}
-        </ul>
+        <div>
+          <h2 className="header">Income</h2>
+          <ul className="text-center mx-auto">
+            {incomes.length > 0 ? (
+              incomes.map((income) => (
+                <span>
+                  <li key={income.id}
+                  className="exp-inc-item text-green-dark">
+                    {income.source} - ${income.amount}
+                  </li>
+                  <button
+                    onClick={() => handleDeleteIncome(income.id)}
+                    className="exp-inc-btn"
+                  >
+                    Delete
+                  </button>
+                </span>
+              ))
+            ) : (
+              <p>No income recorded.</p>
+            )}
+          </ul>
+        </div>
       </div>
-    </>
+    </Layout>
   );
 }

@@ -31,14 +31,14 @@ export default function ExpenseModal({
 
   return (
     <div>
-      <div className="w-1/3 h-1/3 absolute b-2 border-lightgrey top-1/2 z-10 mx-auto my-0 shadow-lg bg-white rounded">
+      <div className="w-1/3 h-1/3 absolute border-2 border-grey-300 top-1/2 z-10 mx-auto my-0 shadow-lg bg-white rounded dark:bg-gray-700 dark:border-grey-600 p-4">
         <button
           onClick={onClose}
           className="w-6 h-6 m-2 rounded bg-red text-white font-bold float-right clear-both"
         >
           <p>x</p>
         </button>
-        <h2>Summary of {selectedDate}</h2>
+        <h2 className="header">Summary of {selectedDate}</h2>
 
         {hasData ? (
           <ul className="space-y-2">

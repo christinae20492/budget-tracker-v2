@@ -14,6 +14,8 @@ import {
 import { filterCurrentMonthExpenses } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
 import Link from "next/link";
+import LoadingScreen from "@/app/components/ui/Loader";
+import Head from "next/head";
 
 export default function MonthlySummary() {
   const [summary, setSummary] = useState<ReturnType<
@@ -57,7 +59,7 @@ export default function MonthlySummary() {
 
           let threshold;
           if (env.budget <= 50) {
-            threshold = env.budget * 0.5;
+            threshold = env.budget * 0.67;
           } else if (env.budget <= 200) {
             threshold = env.budget * 0.75;
           } else {
@@ -97,30 +99,42 @@ export default function MonthlySummary() {
   }, [currentExpenses, currentIncomes, currentEnvelopes]);
 
   if (isLoading) {
-    return <div>Loading Monthly Summary...</div>;
+    return <LoadingScreen />;
   }
 
   return (
     <Layout>
+      <Head>
+        <title>Your Month In Review</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <h1 className="text-center">Monthly Summary</h1>
       <h3 className="text-right p-3 text-green-dark dark:text-black hover:text-green">
         <Link href={"/monthly-summary/year-review"}>View the Year</Link>
       </h3>
       <div>
-        <p>Total Income: ${summary?.incomeTotals.toFixed(2) ?? 0}</p>
-        <p>Total Spending: ${summary?.expenseTotals.toFixed(2) ?? 0}</p>
-        <p>Net Savings: ${summary?.spendingDifference.toFixed(2) ?? 0}</p>
-        <p>
+        <p className="my-2">
+          Total Income: ${summary?.incomeTotals.toFixed(2) ?? 0}
+        </p>
+        <p className="my-2">
+          Total Spending: ${summary?.expenseTotals.toFixed(2) ?? 0}
+        </p>
+        <p className="my-2">
+          Net Savings: ${summary?.spendingDifference.toFixed(2) ?? 0}
+        </p>
+        <p className="my-2">
           Spending Compared to Last Month: $
           {summary?.spendingComparison.toFixed(2) ?? 0}
         </p>
       </div>
-      <p>
+      <p className="my-2">
         Category with Highest Spending: {summary?.highestEnvelope} with $
         {summary?.highestAmount.toFixed(2)}
       </p>
-      <p>Most Frequent Purchases Category: {summary?.frequentEnvelope}</p>
-      <p>
+      <p className="my-2">
+        Most Frequent Purchases Category: {summary?.frequentEnvelope}
+      </p>
+      <p className="my-2">
         Location w Highest Spending: {summary?.highestSpendingLocation} with $
         {summary?.highestSpendingAmount.toFixed(2)}
       </p>
@@ -135,15 +149,18 @@ export default function MonthlySummary() {
             <div
               key={env.title}
               className={`summary-envelope ${
-                isOverBudget ? "text-red font-bold" : ""
+                isOverBudget ? "text-red dark:text-red-400 font-bold" : ""
               }`}
             >
               <p>
-                {env.title}: ${totalSpent} / ${env.budget}
+                {env.title}: ${totalSpent.toFixed(2)} / ${env.budget}
               </p>
               <div className="expense-list pl-4 mt-2">
                 {env.expenses?.map((expense, idx) => (
-                  <p key={idx} className="expense-item text-gray-700">
+                  <p
+                    key={idx}
+                    className="expense-item text-gray-700 dark:text-gray-400"
+                  >
                     {expense.location}: ${expense.amount}
                   </p>
                 ))}

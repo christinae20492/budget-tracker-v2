@@ -1,15 +1,15 @@
+"use client"
+
 import React from "react";
-import { applySavedTheme } from "@/app/utils/theme";
 import FloatingMenu from "./FloatingMenu";
 import "@/app/tailwind.css";
+import { ToastContainer, toast } from "react-toastify";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-
-  //applySavedTheme();
 
   return (
     <div id="layout">
@@ -19,6 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <main className="main-container">
         {children}
       </main>
+      <ToastContainer />
     </div>
   );
 };

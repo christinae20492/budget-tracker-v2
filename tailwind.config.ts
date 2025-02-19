@@ -36,6 +36,7 @@ export default {
           DEFAULT: "#52808D",
           light: "#9ED5E5",
           dark: "#243439",
+          med: "#7596A5",
         },
 
         pink: "#CC8A94",

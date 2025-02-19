@@ -14,6 +14,7 @@ import {
 import { formatCurrency, getFormattedDate } from "@/app/utils/expenses";
 import { useRouter } from "next/navigation";
 import DataManagement from "@/app/components/ui/DataButtons";
+import Head from "next/head";
 
 export default function ManageExpenses() {
   const [expenses, setExpenses] = useState(getLocalExpenses());
@@ -78,9 +79,11 @@ export default function ManageExpenses() {
 
   return (
     <Layout>
-      <h1 className="text-center font-bold text-2xl">
-        Manage Expenses, Incomes, and Envelopes
-      </h1>
+      <Head>
+        <title>Manage</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+      <h1 className="header">Manage Expenses, Incomes, and Envelopes</h1>
       <DataManagement />
       <div className="grid grid-cols-3 gap-4 mt-6">
         {/* Expenses */}
@@ -90,7 +93,7 @@ export default function ManageExpenses() {
             {expenses.map((expense) => (
               <div
                 key={expense.id}
-                className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-gray-100"
+                className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-blue-200 hover:border-blue-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
                 onClick={() => openModal(expense, "expense")}
               >
                 <p>{getFormattedDate(expense.date)}</p>
@@ -108,7 +111,7 @@ export default function ManageExpenses() {
             {incomes.map((income) => (
               <div
                 key={income.id}
-                className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-gray-100"
+                className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-purple-200 hover:border-purple-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
                 onClick={() => openModal(income, "income")}
               >
                 <p>{getFormattedDate(income.date)}</p>
@@ -126,7 +129,7 @@ export default function ManageExpenses() {
             {envelopes.map((envelope) => (
               <div
                 key={envelope.title}
-                className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-gray-100"
+                className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-amber-200 hover:border-amber-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
                 onClick={() => openModal(envelope, "envelope")}
               >
                 <p>
@@ -161,7 +164,7 @@ export default function ManageExpenses() {
       {/* Modal */}
       {isModalVisible && selectedItem && (
         <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded p-4 shadow-lg w-1/3">
+          <div className="bg-white rounded p-4 shadow-lg w-1/3 dark:bg-gray-700">
             <h3 className="font-bold text-lg">
               {type === "expense"
                 ? "Expense Details"

@@ -7,6 +7,28 @@ import Layout from "@/app/components/ui/Layout";
 import { getYearlyExpenditureDetails } from "@/app/utils/expenses";
 import { getLocalExpenses, getLocalIncome } from "@/app/utils/localStorage";
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 export default function YearlySummary() {
   const [summary, setSummary] = useState<ReturnType<
     typeof getYearlyExpenditureDetails
@@ -19,19 +41,68 @@ export default function YearlySummary() {
 
   useEffect(() => {
     if (expenses.length && incomes.length) {
-      const details = getYearlyExpenditureDetails(incomes, expenses);
+      const details = getYearlyExpenditureDetails(incomes, expenses, year);
       setSummary(details);
       setIsLoading(false);
     }
-  }, [expenses, incomes, year]);
+  }, [year]);
 
   if (!summary) {
     return <div>Loading Yearly Summary...</div>;
   }
 
+  const data = {
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    datasets: [
+      {
+        label: "Total Income",
+        data: summary.monthlyIncome,
+        borderColor: "#34853B",
+        backgroundColor: "#2CE83F",
+      },
+      {
+        label: "Total Spending",
+        data: summary.monthlyExpenses,
+        borderColor: "#962C2C",
+        backgroundColor: "#CC3838",
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      title: {
+        display: true,
+        text: `Income vs. Expenditure for ${year}`,
+      },
+    },
+  };
+
   return (
     <Layout>
-      <h1 className="text-center">Yearly Summary</h1>
+      <Head>
+        <title>Your Year In Review</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+      <h1 className="text-center text-2xl font-bold">Yearly Summary</h1>
+
       <div className="text-center my-5">
         <h3 className="text-gray-400">
           <button onClick={() => setYear(year - 1)}>Previous Year</button>
@@ -43,16 +114,33 @@ export default function YearlySummary() {
           <button onClick={() => setYear(year + 1)}>Next Year</button>
         </h3>
       </div>
+
       <div>
-        <p>Total Income: ${summary.incomeTotals.toFixed(2)}</p>
-        <p>Total Spending: ${summary.expenseTotals.toFixed(2)}</p>
-        <p>Net Savings: ${summary.spendingDifference.toFixed(2)}</p>
+        <p className="my-2">Total Income: ${summary.incomeTotals.toFixed(2)}</p>
+        <p className="my-2">
+          Total Spending: ${summary.expenseTotals.toFixed(2)}
+        </p>
+        <p className="my-2">
+          Net Savings: ${summary.spendingDifference.toFixed(2)}
+        </p>
       </div>
-      <p>
+
+      <p className="my-2">
         Category with Highest Spending: {summary.highestEnvelope} - $
         {summary.highestAmount}
       </p>
-      <p>Most Frequent Purchases Category: {summary.frequentEnvelope}</p>
+      <p className="my-2">
+        Most Frequent Purchases Category: {summary.frequentEnvelope}
+      </p>
+
+      <div className="mt-10">
+        <h2 className="text-center text-xl font-semibold">
+          Income vs. Expenditure
+        </h2>
+        <div className="max-w-lg mx-auto">
+          <Line data={data} options={options} />
+        </div>
+      </div>
     </Layout>
   );
 }

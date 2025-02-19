@@ -9,7 +9,8 @@ import {
 } from "@/app/utils/localStorage";
 import { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
-import { ToastContainer, toast } from "react-toastify";
+import { successToast } from "@/app/utils/toast";
+import Head from "next/head";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -90,15 +91,24 @@ export default function Index() {
     }
   }, [summary]);
 
-  const savingsMessage =
-    summary.difference > 0
-      ? `🎉 Wow, you saved a lot of money this month! You still have $${summary.difference.toFixed(
-          2
-        )} left over after paying the month's debts.`
-      : `😞 This month wasn't too good budget-wise. It looks like ${spendingDetails.frequentLocation} really got to you - you spent a total of $${spendingDetails.highestAmount} there this month.`;
+  const Message = () => {
+    if (summary.difference > 0) {
+      return `🎉 Wow, you saved a lot of money this month! You still have $${summary.difference.toFixed(
+        2
+      )} left over after paying the month's debts.`;
+    } else if (summary.difference < 0) {
+      return `😞 This month wasn't too good budget-wise. It looks like ${spendingDetails.frequentLocation} really got to you—you spent a total of $${spendingDetails.highestAmount} there this month.`;
+    } else if (!spendingDetails.frequentLocation && summary.difference === 0) {
+      return `Why are you looking here? There's nothing to report. Get to budgeting already!`;
+    }
+  };
 
   return (
     <Layout>
+      <Head>
+        <title>Just a Bit - Budget Tracker</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <div>
         <h1 className="my-5 text-center">Your "At a Glance"</h1>
         <table className="comparison-table text-center mx-auto">
@@ -117,12 +127,12 @@ export default function Index() {
             </tr>
           </tbody>
         </table>
-        <div className="m-6">{savingsMessage}</div>
+        <div className="m-6">{Message()}</div>
         <div className="chart-container mt-6">
           <canvas id="doughnutChart" />
         </div>
+        <button></button>
       </div>
-      <ToastContainer />
     </Layout>
   );
 }

@@ -97,6 +97,10 @@ export default function ExpenseCalendar() {
 
   return (
     <Layout>
+      <Head>
+        <title>Details Calendar</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <div className="my-6">
         <ToggleSwitch onToggle={handleToggle} />
       </div>

@@ -70,7 +70,7 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
           <div>
             <label
               htmlFor="location"
-              className="block text-sm font-medium text-gray-700"
+              className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white"
             >
               Title<span className="text-red-500">*</span>
             </label>
@@ -81,14 +81,14 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-1 block dark:bg-slate-900 dark:text-white w-full border border-gray-300 rounded-md shadow-sm p-2"
             />
           </div>
 
           <div>
             <label
               htmlFor="date"
-              className="block text-sm font-medium text-gray-700"
+              className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white"
             >
               Is this budget <span className="font-semibold">set</span>, or{" "}
               <span className="font-semibold">variable</span>?
@@ -101,14 +101,14 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
               value={fixed}
               onChange={(e) => setFixed(e.target.value)}
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-1 block dark:bg-slate-900 dark:text-white w-full border border-gray-300 rounded-md shadow-sm p-2"
             />
           </div>
 
           <div>
             <label
               htmlFor="amount"
-              className="block text-sm font-medium text-gray-700"
+              className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white"
             >
               Total Allowance ($)<span className="text-red-500">*</span>
             </label>
@@ -121,14 +121,14 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
               required
               min="0"
               step="0.01"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-1 block dark:bg-slate-900 dark:text-white w-full border border-gray-300 rounded-md shadow-sm p-2"
             />
           </div>
 
           <div>
             <label
             htmlFor="amount"
-            className="block text-sm font-medium text-gray-700">
+            className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white">
               Comments?
             </label>
             <input 
@@ -137,13 +137,13 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
             name="comments"
             value={comments}
             onChange={(e) => setComments(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"/>
+            className="mt-1 block dark:bg-slate-900 dark:text-white w-full border border-gray-300 rounded-md shadow-sm p-2"/>
           </div>
 
           <div className="text-center">
             <button
               type="submit"
-              className="px-4 py-2 rounded-md hover:neg-item"
+              className="px-4 py-2 rounded-md hover:neg-item dark:bg-slate-600"
             >
               Add
             </button>

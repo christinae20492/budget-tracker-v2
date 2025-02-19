@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { getEnvelopes, Envelope, Expense } from "@/app/utils/localStorage";
+import Layout from "@/app/components/ui/Layout";
+import Head from "next/head";
 
 export default function EditEnvelope() {
   const router = useRouter();
-  const { query } = router;
-  const envelopeTitle = query?.date as string;
+  const { item } = router.query;
+  const envelopeTitle = typeof item === "string" ? item : "";
 
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -44,28 +46,36 @@ export default function EditEnvelope() {
   if (!envelope) return <p className="text-red-500">Envelope not found</p>;
 
   return (
-    <div className="edit-envelope">
-      <h1 className="text-xl font-bold">Modify {envelope.title} Expenses</h1>
+    <Layout>
+      <Head>
+        <title>{envelope.title}'s Details</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+      <div className="edit-envelope">
+        <h1 className="header">Modify {envelope.title} Expenses</h1>
 
-      {expenses.length > 0 ? (
-        <ul className="mt-4">
-          {expenses.map((expense) => (
-            <li key={expense.id} className="border-b py-2">
-              {expense.location} - ${expense.amount.toFixed(2)}
-              <button
-                className="ml-2 px-2 py-1 bg-red-500 text-white rounded"
-                onClick={() => handleDelete(expense.id)}
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-4 text-gray-600">
-          No expenses recorded for {envelope.title}.
-        </p>
-      )}
-    </div>
+        {expenses.length > 0 ? (
+          <ul className="text-center mx-auto">
+            {expenses.map((expense) => (
+              <span>
+                <li key={expense.id} className="exp-inc-item">
+                  {expense.location} - ${expense.amount.toFixed(2)}
+                </li>
+                <button
+                  className="exp-inc-btn"
+                  onClick={() => handleDelete(expense.id)}
+                >
+                  Delete
+                </button>
+              </span>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-gray-600 dark:text-gray-200">
+            No expenses recorded for {envelope.title}.
+          </p>
+        )}
+      </div>
+    </Layout>
   );
 }
