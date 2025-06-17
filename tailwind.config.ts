@@ -39,6 +39,15 @@ export default {
           med: "#7596A5",
         },
 
+        notindigo: {
+          100:"#1C135D",
+          200:"#2B1D8A",
+          DEEAULT:"#3A27B7",
+          300:"#8170DC",
+          400:"#B2A5E9",
+          500:"#E4E0F7",
+        },
+
         pink: "#CC8A94",
         yellow: "#bdb775",
         darkyellow: "#1c1c18",

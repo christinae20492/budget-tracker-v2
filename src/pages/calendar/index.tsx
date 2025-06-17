@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation"; // ✅ FIXED: Use App Router import
+import { useRouter } from "next/navigation";
 import Head from "next/head";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import ExpenseModal from "@/app/components/ui/ExpenseModal";
-import FloatingMenu from "@/app/components/ui/FloatingMenu";
 import {
   getLocalExpenses,
   Expense,
@@ -14,8 +13,14 @@ import {
   getEnvelopes,
   Envelope,
 } from "@/app/utils/localStorage";
+import { getExpenses } from "@/app/utils/dynamotest";
 import ToggleSwitch from "@/app/components/ui/ToggleSwitch";
 import Layout from "@/app/components/ui/Layout";
+import awsmobile from "@/aws-exports";
+import { Amplify } from "aws-amplify";
+import Auth from "@/app/components/ui/Auth";
+
+Amplify.configure(awsmobile)
 
 export default function ExpenseCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,11 +34,22 @@ export default function ExpenseCalendar() {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
 
+  const [calendarView, setCalendarView] = useState("dayGridMonth");
+
   const router = useRouter();
   type ViewType = "expenses" | "income" | "both";
 
+  const updateView = () => {
+    setCalendarView(window.innerWidth < 1000 ? "dayGridWeek" : "dayGridMonth");
+  };
+
+const fetchExpenses = async () =>{
+      setExpenses(await getExpenses());
+}
+
   useEffect(() => {
-    setExpenses(getLocalExpenses());
+//fetchExpenses();
+setExpenses(getLocalExpenses());
     setIncomes(getLocalIncome());
     setEnvelopes(getEnvelopes());
   }, []);
@@ -46,6 +62,12 @@ export default function ExpenseCalendar() {
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    updateView();
+    window.addEventListener("resize", updateView);
+    return () => window.removeEventListener("resize", updateView);
   }, []);
 
   const handleDateClick = (info: any) => {
@@ -107,7 +129,7 @@ export default function ExpenseCalendar() {
 
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
+        initialView={calendarView}
         dateClick={handleDateClick}
         selectable={true}
         headerToolbar={{ left: "prev,next", center: "title", right: "today" }}

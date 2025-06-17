@@ -9,7 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.6.1",
+    "@aws-amplify/auth": "^6.11.5",
+    "@aws-amplify/ui-react": "^6.9.2",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
@@ -17,10 +18,13 @@
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
+    "aws-amplify": "^6.13.1",
+    "aws-sdk": "^2.1692.0",
     "chart.js": "^4.4.7",
     "install": "^0.13.0",
-    "next": "15.1.7",
+    "next": "^15.3.2",
     "npm": "^11.1.0",
+    "rc-slider": "^11.1.8",
     "rc-util": "^5.44.4",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
@@ -28,11 +32,18 @@
     "react-toastify": "^11.0.3"
   },
   "devDependencies": {
+    "@aws-amplify/backend": "^1.14.1",
+    "@aws-amplify/backend-cli": "^1.4.11",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "aws-cdk": "^2.1000.2",
+    "aws-cdk-lib": "^2.180.0",
+    "constructs": "^10.4.2",
+    "esbuild": "^0.25.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
   }
 }

@@ -2,80 +2,94 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { getEnvelopes, Envelope, Expense } from "@/app/utils/localStorage";
+import {
+  getEnvelopes,
+  Envelope,
+  Expense,
+  Income,
+  getLocalIncome,
+  getLocalExpenses,
+} from "@/app/utils/localStorage";
 import Layout from "@/app/components/ui/Layout";
 import Head from "next/head";
+import Auth from "@/app/components/ui/Auth";
+import ItemView from "@/app/components/ui/ItemView";
 
 export default function EditEnvelope() {
   const router = useRouter();
   const { item } = router.query;
-  const envelopeTitle = typeof item === "string" ? item : "";
 
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
-  useEffect(() => {
-    if (!envelopeTitle) return;
+  const [returns, setReturns] = useState<any>([]);
 
-    const envelopes = getEnvelopes();
-    const selectedEnvelope = envelopes.find((e) => e.title === envelopeTitle);
+  const assignItem = (
+    input: any,
+    envelopesArray: Envelope[],
+    expenseArray: Expense[],
+    incomeArray: Income[]
+  ) => {
+    let envelopeItem;
+    let expenseItem;
+    let incomeItem;
 
-    if (!selectedEnvelope) {
-      console.error("Envelope not found");
-      return;
+    const foundEnv = envelopesArray.find((env) => env.title === input);
+    if (foundEnv) {
+      envelopeItem = foundEnv;
+      expenseItem = null;
+      incomeItem = null;
+      return { envelopeItem, expenseItem, incomeItem };
+    } else if (!foundEnv) {
+      let itemAsNum = +input;
+      const foundExpense = expenseArray.find(
+        (expense) => expense.id === itemAsNum
+      );
+      if (foundExpense) {
+        expenseItem = foundExpense;
+        incomeItem = null;
+        envelopeItem = null;
+      } else {
+        const foundIncome = incomeArray.find(
+          (income) => income.id === itemAsNum
+        );
+        if (foundIncome) {
+          incomeItem = foundIncome;
+          expenseItem = null;
+          envelopeItem = null;
+        }
+      }
+    } else {
+      envelopeItem = null;
+      expenseItem = null;
+      incomeItem = null;
     }
 
-    setEnvelope(selectedEnvelope);
-    setExpenses(selectedEnvelope.expenses || []);
-  }, [envelopeTitle]);
-
-  const handleDelete = (id: number) => {
-    if (!envelope) return;
-
-    const updatedExpenses = expenses.filter((expense) => expense.id !== id);
-    setExpenses(updatedExpenses);
-
-    const updatedEnvelope = { ...envelope, expenses: updatedExpenses };
-    const updatedEnvelopes = getEnvelopes().map((env) =>
-      env.title === envelopeTitle ? updatedEnvelope : env
-    );
-
-    localStorage.setItem("envelopes", JSON.stringify(updatedEnvelopes));
+    return { envelopeItem, expenseItem, incomeItem };
   };
 
-  if (!envelope) return <p className="text-red-500">Envelope not found</p>;
+  useEffect(() => {
+    if (!item) return;
+    const expenseArray = getLocalExpenses();
+    const incomeArray = getLocalIncome();
+    const envelopesArray = getEnvelopes();
+
+    if (expenseArray.length && envelopesArray.length && incomeArray.length) {
+      setReturns(assignItem(item, envelopesArray, expenseArray, incomeArray));
+    }
+  }, [item]);
 
   return (
     <Layout>
       <Head>
-        <title>{envelope.title}'s Details</title>
+        <title>Item Details</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className="edit-envelope">
-        <h1 className="header">Modify {envelope.title} Expenses</h1>
-
-        {expenses.length > 0 ? (
-          <ul className="text-center mx-auto">
-            {expenses.map((expense) => (
-              <span>
-                <li key={expense.id} className="exp-inc-item">
-                  {expense.location} - ${expense.amount.toFixed(2)}
-                </li>
-                <button
-                  className="exp-inc-btn"
-                  onClick={() => handleDelete(expense.id)}
-                >
-                  Delete
-                </button>
-              </span>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 text-gray-600 dark:text-gray-200">
-            No expenses recorded for {envelope.title}.
-          </p>
-        )}
-      </div>
+      <ItemView
+        envelopeItem={returns.envelopeItem}
+        expenseItem={returns.expenseItem}
+        incomeItem={returns.incomeItem}
+      />
     </Layout>
   );
 }

@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { getEnvelopes, Envelope, Expense } from "@/app/utils/localStorage";
-import Layout from "@/app/components/ui/Layout";
+import { getEnvelopes, Envelope, Expense, getExpensesForEnvelope, getLocalExpenses } from "@/app/utils/localStorage";
+import { getFormattedDate } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
+import Auth from "@/app/components/ui/Auth";
+import Layout from "@/app/components/ui/Layout";
 
 export default function EnvelopeDetails() {
   const router = useRouter();
@@ -31,20 +33,37 @@ export default function EnvelopeDetails() {
     }
 
     setEnvelopeData(currentEnvelope);
-    const expenseList = currentEnvelope.expenses || [];
-    setExpenses(expenseList);
+    const expenseArray = getLocalExpenses();
+    const expenseList = getExpensesForEnvelope(currentEnvelope, expenseArray) || [];
 
-    const total = expenseList.reduce((sum, expense) => sum + expense.amount, 0);
+    // Filter expenses for the current month
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    const filteredExpenses = expenseList.filter((expense) => {
+      const expenseDate = new Date(expense.date);
+      return (
+        expenseDate.getMonth() === currentMonth &&
+        expenseDate.getFullYear() === currentYear
+      );
+    });
+
+    setExpenses(filteredExpenses);
+
+    const total = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
     setTotalSpent(total);
 
-    if (currentEnvelope.budget) {
-    if (currentEnvelope.fixed && total > currentEnvelope.budget) {
-      warnToast("Warning: Budget exceeded for this fixed envelope!");
-    }}
+    let diff = total - currentEnvelope?.budget;
 
-    if (expenseList.length > 0) {
+    if (currentEnvelope.budget) {
+      if (currentEnvelope.fixed && total > currentEnvelope.budget) {
+        warnToast(`Budget exceeded! You spent an extra $${diff.toFixed(2)}!`);
+      }
+    }
+
+    if (filteredExpenses.length > 0) {
       const locationFrequency: Record<string, number> = {};
-      expenseList.forEach((expense) => {
+      filteredExpenses.forEach((expense) => {
         locationFrequency[expense.location] = (locationFrequency[expense.location] || 0) + 1;
       });
 
@@ -77,17 +96,17 @@ export default function EnvelopeDetails() {
           <ul className="list-disc pl-5">
             {expenses.map((expense, index) => (
               <span>
-              <li
-                key={index}
-                className={`exp-inc-item ${expense.location === mostFrequentLocation ? "font-bold text-blue-500" : ""}`}
-              >
-                {expense.location}: ${expense.amount}
-              </li>
+                <li
+                  key={index}
+                  className={`exp-inc-item my-3 ${expense.location === mostFrequentLocation ? "font-bold text-blue-med" : ""}`}
+                >
+                  {expense.location}: ${expense.amount}
+                </li>
               </span>
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500 mt-2">No expenses recorded for this envelope.</p>
+          <p className="text-gray-500 mt-2">No expenses recorded for this envelope this month.</p>
         )}
       </div>
     </Layout>

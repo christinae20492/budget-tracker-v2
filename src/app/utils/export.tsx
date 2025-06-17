@@ -36,19 +36,22 @@ export const exportYearlyData = () => {
   const envelopes = JSON.parse(localStorage.getItem("envelopes") || "[]");
 
   const currentYear = new Date().getFullYear();
+  const id = Date.now();
 
   const filteredExpenses = expenses.filter(
-    (expense: { date: string | number | Date; }) => new Date(expense.date).getFullYear() === currentYear
+    (expense: { date: string | number | Date }) =>
+      new Date(expense.date).getFullYear() === currentYear
   );
   const filteredIncomes = incomes.filter(
-    (income: { date: string | number | Date; }) => new Date(income.date).getFullYear() === currentYear
+    (income: { date: string | number | Date }) =>
+      new Date(income.date).getFullYear() === currentYear
   );
 
   const dataToExport = {
     year: currentYear,
     expenses: filteredExpenses,
     incomes: filteredIncomes,
-    envelopes,
+    //envelopes,
   };
 
   const jsonData = JSON.stringify(dataToExport, null, 2);
@@ -57,7 +60,7 @@ export const exportYearlyData = () => {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = `budget_data_${currentYear}.json`;
+  link.download = `budget_data_${currentYear}-${id}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

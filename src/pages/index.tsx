@@ -1,4 +1,3 @@
-import Layout from "@/app/components/ui/Layout";
 import { getMonthlyExpenditureDetails } from "@/app/utils/expenses";
 import {
   Expense,
@@ -8,9 +7,10 @@ import {
   getEnvelopes,
 } from "@/app/utils/localStorage";
 import { useEffect, useRef, useState } from "react";
-import Chart from "chart.js/auto";
-import { successToast } from "@/app/utils/toast";
 import Head from "next/head";
+import Auth from "@/app/components/ui/Auth";
+import SummaryDoughnutChart from "@/app/components/ui/DonutChart";
+import Layout from "@/app/components/ui/Layout";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -22,11 +22,9 @@ export default function Index() {
   });
   const [spendingDetails, setSpendingDetails] = useState({
     highestEnvelope: "",
-    highestAmount: {},
+    highestAmount: 0,
     frequentLocation: "",
   });
-
-  const chartRef = useRef<Chart | null>(null);
 
   useEffect(() => {
     const fetchData = () => {
@@ -53,52 +51,18 @@ export default function Index() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (chartRef.current) {
-      chartRef.current.destroy();
-    }
-
-    const ctx = document.getElementById("doughnutChart") as HTMLCanvasElement;
-    if (ctx) {
-      chartRef.current = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: ["Income", "Expenses", "Remainder"],
-          datasets: [
-            {
-              data: [
-                summary.incomeTotals,
-                summary.expenseTotals,
-                summary.difference,
-              ],
-              backgroundColor: ["#86bd75", "#DB6A6A", "#E4C04C"],
-              hoverBackgroundColor: ["#45A049", "#E64A19", "#bdb775"],
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: "top",
-            },
-          },
-        },
-      });
-    }
-  }, [summary]);
-
   const Message = () => {
     if (summary.difference > 0) {
       return `🎉 Wow, you saved a lot of money this month! You still have $${summary.difference.toFixed(
         2
       )} left over after paying the month's debts.`;
     } else if (summary.difference < 0) {
-      return `😞 This month wasn't too good budget-wise. It looks like ${spendingDetails.frequentLocation} really got to you—you spent a total of $${spendingDetails.highestAmount} there this month.`;
-    } else if (!spendingDetails.frequentLocation && summary.difference === 0) {
+      return `😞 This month wasn't too good budget-wise. It looks like ${
+        spendingDetails.frequentLocation
+      } really got to you—you spent a total of $${spendingDetails.highestAmount.toFixed(
+        2
+      )} there this month.`;
+    } else if (!spendingDetails.frequentLocation && !summary.difference) {
       return `Why are you looking here? There's nothing to report. Get to budgeting already!`;
     }
   };
@@ -128,8 +92,8 @@ export default function Index() {
           </tbody>
         </table>
         <div className="m-6">{Message()}</div>
-        <div className="chart-container mt-6">
-          <canvas id="doughnutChart" />
+        <div className="mt-6">
+          <SummaryDoughnutChart summary={summary} />
         </div>
         <button></button>
       </div>

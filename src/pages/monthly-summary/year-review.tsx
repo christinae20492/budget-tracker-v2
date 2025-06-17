@@ -18,6 +18,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import Auth from "@/app/components/ui/Auth";
 
 ChartJS.register(
   CategoryScale,

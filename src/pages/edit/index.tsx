@@ -15,6 +15,7 @@ import { formatCurrency, getFormattedDate } from "@/app/utils/expenses";
 import { useRouter } from "next/navigation";
 import DataManagement from "@/app/components/ui/DataButtons";
 import Head from "next/head";
+import Auth from "@/app/components/ui/Auth";
 
 export default function ManageExpenses() {
   const [expenses, setExpenses] = useState(getLocalExpenses());
@@ -77,6 +78,16 @@ export default function ManageExpenses() {
     setIsModalVisible(true);
   };
 
+  const handleItemClick = (item: any) =>{
+    const params = item.id;
+    router.push(`edit/${params}`)
+  }
+
+  const handleEnvClick = (env: any) =>{
+    const params = env.title;
+    router.push(`edit/${params}`)
+  }
+
   return (
     <Layout>
       <Head>
@@ -89,12 +100,12 @@ export default function ManageExpenses() {
         {/* Expenses */}
         <div>
           <h2 className="font-bold text-xl">Expenses</h2>
-          <div className="expense-list">
+          <div className="expense-list max-h-svh overflow-y-scroll">
             {expenses.map((expense) => (
               <div
                 key={expense.id}
                 className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-blue-200 hover:border-blue-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
-                onClick={() => openModal(expense, "expense")}
+                onClick={() => handleItemClick(expense)}
               >
                 <p>{getFormattedDate(expense.date)}</p>
                 <p>{expense.location}</p>
@@ -107,12 +118,12 @@ export default function ManageExpenses() {
         {/* Incomes */}
         <div>
           <h2 className="font-bold text-xl">Incomes</h2>
-          <div className="income-list">
+          <div className="income-list max-h-svh overflow-y-scroll">
             {incomes.map((income) => (
               <div
                 key={income.id}
                 className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-purple-200 hover:border-purple-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
-                onClick={() => openModal(income, "income")}
+                onClick={() => handleItemClick(income)}
               >
                 <p>{getFormattedDate(income.date)}</p>
                 <p>{income.source}</p>
@@ -125,12 +136,12 @@ export default function ManageExpenses() {
         {/* Envelopes */}
         <div>
           <h2 className="font-bold text-xl">Envelopes</h2>
-          <div className="envelope-list">
+          <div className="envelope-list max-h-svh overflow-y-scroll">
             {envelopes.map((envelope) => (
               <div
                 key={envelope.title}
                 className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-amber-200 hover:border-amber-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
-                onClick={() => openModal(envelope, "envelope")}
+                onClick={() => handleEnvClick(envelope)}
               >
                 <p>
                   <strong>Title:</strong> {envelope.title}
@@ -160,154 +171,6 @@ export default function ManageExpenses() {
           </div>
         </div>
       </div>
-
-      {/* Modal */}
-      {isModalVisible && selectedItem && (
-        <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded p-4 shadow-lg w-1/3 dark:bg-gray-700">
-            <h3 className="font-bold text-lg">
-              {type === "expense"
-                ? "Expense Details"
-                : type === "income"
-                ? "Income Details"
-                : "Envelope Details"}
-            </h3>
-
-            <div className="mt-4">
-              {"date" in selectedItem && (
-                <p>
-                  <strong>Date:</strong> {getFormattedDate(selectedItem.date)}
-                </p>
-              )}
-
-              {"location" in selectedItem && (
-                <p>
-                  <strong>Location:</strong> {selectedItem.location}
-                </p>
-              )}
-              {"source" in selectedItem && (
-                <p>
-                  <strong>Source:</strong> {selectedItem.source}
-                </p>
-              )}
-
-              {type !== "envelope" && "amount" in selectedItem && (
-                <p>
-                  <strong>Amount:</strong> {formatCurrency(selectedItem.amount)}
-                </p>
-              )}
-              {type === "expense" && "envelope" in selectedItem && (
-                <>
-                  <p>
-                    <strong>Envelope:</strong> {selectedItem.envelope}
-                  </p>
-                  <p>
-                    <strong>Comments:</strong> {selectedItem.comments}
-                  </p>
-                </>
-              )}
-
-              {type === "income" && "amount" in selectedItem && (
-                <p>
-                  <strong>Allocation:</strong>{" "}
-                  {JSON.stringify(selectedItem.amount)}
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end mt-4">
-              {type === "expense" && (
-                <>
-                  {!isMoveDropdownVisible && (
-                    <button
-                      className="button bg-blue-500 text-white mr-2"
-                      onClick={() => setIsMoveDropdownVisible(true)}
-                    >
-                      Move
-                    </button>
-                  )}
-                  {isMoveDropdownVisible && (
-                    <div className="w-full mt-4">
-                      <label
-                        htmlFor="envelope"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Select Envelope:
-                      </label>
-                      <select
-                        id="envelope"
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                        value={selectedEnvelope}
-                        onChange={(e) => setSelectedEnvelope(e.target.value)}
-                      >
-                        <option value="">Choose an envelope</option>
-                        {envelopes.map((env) => (
-                          <option key={env.title} value={env.title}>
-                            {env.title}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="flex justify-end mt-2">
-                        <button
-                          className="button bg-green-500 text-white mr-2"
-                          disabled={!selectedEnvelope}
-                          onClick={handleMove}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          className="button bg-gray-500 text-white"
-                          onClick={() => setIsMoveDropdownVisible(false)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {type !== "envelope" && "id" in selectedItem && (
-                <>
-                  <button
-                    className="button bg-red-500 text-white mr-2"
-                    onClick={() => handleDelete(selectedItem.id)}
-                  >
-                    Delete
-                  </button>
-                  <button
-                    className="button"
-                    onClick={() => setIsModalVisible(false)}
-                  >
-                    Close
-                  </button>
-                </>
-              )}
-
-              {type === "envelope" && "title" in selectedItem && (
-                <>
-                  <button
-                    className="button bg-blue-500 text-white mr-2"
-                    onClick={() =>
-                      router.push(
-                        `/edit/${encodeURIComponent(selectedItem.title)}`
-                      )
-                    }
-                  >
-                    Modify
-                  </button>
-                  <button
-                    className="button bg-red-500 text-white mr-2"
-                    onClick={() => deleteEnv(selectedItem.title)}
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </Layout>
   );
 }

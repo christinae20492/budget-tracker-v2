@@ -8,8 +8,11 @@ import {
   getLocalIncome,
   Expense,
   Income,
+  deleteExpense,
 } from "@/app/utils/localStorage";
 import Layout from "@/app/components/ui/Layout";
+import Auth from "@/app/components/ui/Auth";
+import { successToast } from "@/app/utils/toast";
 
 export default function DayDetails() {
   const router = useRouter();
@@ -32,9 +35,9 @@ export default function DayDetails() {
   };
 
   const handleDeleteExpense = (id: number) => {
-    const updatedExpenses = expenses.filter((expense) => expense.id !== id);
-    setExpenses(updatedExpenses);
-    updateStorage(updatedExpenses, "expenses");
+    deleteExpense(id);
+    router.push('/calendar');
+    successToast("Expense successfully deleted.")
   };
 
   const handleDeleteIncome = (id: number) => {

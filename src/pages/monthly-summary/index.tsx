@@ -7,6 +7,7 @@ import {
   Envelope,
   Expense,
   getEnvelopes,
+  getExpensesForEnvelope,
   getLocalExpenses,
   getLocalIncome,
   Income,
@@ -16,6 +17,7 @@ import { warnToast } from "@/app/utils/toast";
 import Link from "next/link";
 import LoadingScreen from "@/app/components/ui/Loader";
 import Head from "next/head";
+import Auth from "@/app/components/ui/Auth";
 
 export default function MonthlySummary() {
   const [summary, setSummary] = useState<ReturnType<
@@ -34,12 +36,16 @@ export default function MonthlySummary() {
       const rawExpenses = getLocalExpenses();
       const rawIncomes = getLocalIncome();
       const rawEnvelopes = getEnvelopes();
-
       const filteredExpenses = filterCurrentMonthExpenses(rawExpenses);
-      const filteredEnvelopes = rawEnvelopes.map((env) => ({
-        ...env,
-        expenses: filterCurrentMonthExpenses(env.expenses || []),
-      }));
+    const filteredEnvelopes = rawEnvelopes.map((env) => {
+    const envelopeExpenses = getExpensesForEnvelope(env, rawExpenses);
+    const currentMonthExpenses = filterCurrentMonthExpenses(envelopeExpenses);
+
+    return {
+      ...env,
+      expenses: currentMonthExpenses,
+    };
+  });
 
       setCurrentExpenses(filteredExpenses);
       setCurrentIncomes(rawIncomes);

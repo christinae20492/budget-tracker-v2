@@ -17,7 +17,7 @@ export default function ToggleSwitch({
   };
 
   return (
-    <div className="w-1/8 h-12 p-2 absolute top-4 right-4 float-right bg-blue-med rounded-2xl shadow-sm clear-both">
+    <div className="w-1/8 h-12 p-2 absolute top-2 right-4 float-right bg-blue-med rounded-2xl shadow-sm clear-both text-center content-center">
       <button
         className={`text-white text-md mx-4 ${
           view === "income" ? "font-bold" : ""
