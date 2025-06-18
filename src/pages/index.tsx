@@ -10,6 +10,9 @@ import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import SummaryDoughnutChart from "@/app/components/ui/DonutChart";
 import Layout from "@/app/components/ui/Layout";
+import { warnToast } from "@/app/utils/toast";
+import router from "next/router";
+import { useSession } from "next-auth/react";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -24,9 +27,23 @@ export default function Index() {
     highestAmount: 0,
     frequentLocation: "",
   });
+       const { data: session, status } = useSession();
+
+       const sleep = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+       }
+
+     useEffect(() => {
+  if (status === "authenticated") return;
+
+  if (status === "unauthenticated") {
+    warnToast("Please login tO access this page.")
+    router.push("/auth/login")
+  }
+}, [status, router]);
 
   useEffect(() => {
-    const fetchData = () => {
+    const fetchData = async() => {
       const storedExpenses = getLocalExpenses();
       const storedIncomes = getLocalIncome();
       const details = getMonthlyExpenditureDetails(
@@ -47,7 +64,9 @@ export default function Index() {
       });
     };
 
+    if (session) {
     fetchData();
+    }
   }, []);
 
   const Message = () => {

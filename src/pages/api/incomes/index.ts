@@ -4,14 +4,14 @@ import prisma from "@/app/prisma";
 import { getSession } from "next-auth/react";
 import { authOptions } from "../auth/[...nextauth]";
 
-import { Expense, NewExpense } from "@/app/utils/types";
+import { Income, NewIncome } from "@/app/utils/types";
 import { NextResponse } from "next/server";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession({ req, res, authOptions: authOptions });
 
   if (!session) {
-    console.warn(`API: Unauthorized ${req.method} (no session).`);
+    console.warn(`API: Unauthorized attempt to ${req.method} notes (no session).`);
         console.log(req.headers)
     return res.status(401).json({ message: 'Unauthorized: No active session.' });
   }
@@ -24,46 +24,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   switch (req.method) {
     case 'GET':
-      console.log(`API: User ${userId} is requesting all expenses.`);
+      console.log(`API: User ${userId} is requesting all incomes.`);
       try {
-        const getExpenses: Expense[] = await prisma.expense.findMany({
+        const getIncomes: Income[] = await prisma.income.findMany({
           where: {
             userId: userId,
           },
           orderBy: {
-            location: 'desc',
+            source: 'desc',
           },
         });
-        return res.status(200).json(getExpenses);
+        return res.status(200).json(getIncomes);
       } catch (error) {
-        console.error("API: Error fetching notes:", error);
-        return res.status(500).json({ message: 'Internal server error while fetching notes.' });
+        console.error("API: Error fetching incomes:", error);
+        return res.status(500).json({ message: 'Internal server error while fetching incomes.' });
       }
 
     case 'POST':
-      console.log(`API: User ${userId} is attempting to create an expense.`);
-      const { location, envelope, date, amount, comments } = req.body;
+      console.log(`API: User ${userId} is attempting to create an income.`);
+      const { source, amount, date, savings, investments, remainder } = req.body;
 
-      if (!location || !amount) {
+      if (!source || !amount) {
         return res.status(400).json({ message: 'Required fields missing' });
       }
 
       try {
-        const newExpense: NewExpense = await prisma.expense.create({
+        const newIncome: NewIncome = await prisma.income.create({
           data: {
             id: Date.now(),
-            location: location,
-            envelope: envelope,
+            source: source,
+            savings: savings,
             date: date,
             amount: amount,
-            comments: comments,
+            investments: investments,
+            remainder: remainder,
             userId: userId,
           },
         });
-        return res.status(201).json({ message: 'Expense created successfully!', expense: newExpense });
+        return res.status(201).json({ message: 'Income created successfully!', income: newIncome });
       } catch (error) {
-        console.error("API: Error creating expense:", error);
-        return res.status(500).json({ message: 'Failed to create expense.' });
+        console.error("API: Error creating income:", error);
+        return res.status(500).json({ message: 'Failed to create income.' });
       }
 
     default:
