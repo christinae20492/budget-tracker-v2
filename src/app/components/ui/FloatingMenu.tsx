@@ -27,15 +27,15 @@ export default function FloatingMenu() {
     setIsDarkTheme((prev) => !prev);
   };
 
- //<Link href={"/user/acc"}>
-      //<span className="user-btn">
-      //<FontAwesomeIcon icon={faUser} className="menu-icon scale-150 hover:text-gray-600"/>
-      //</span>
-      //</Link>
+
       
   return (
     <div className="floating-menu">
-     
+      <Link href={"/user/acc"}>
+      <span className="user-btn">
+      <FontAwesomeIcon icon={faUser} className="menu-icon scale-150 hover:text-gray-600"/>
+      </span>
+      </Link>
       <Link href={"/"}>
         <FontAwesomeIcon icon={faHouse} className="menu-icon" />
       </Link>

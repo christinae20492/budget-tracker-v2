@@ -116,6 +116,7 @@ const ItemView: React.FC<ItemViewProps> = ({
               keyboard={true}
               onChange={handleBudgetChange}
             />
+            <p className="text-center text-sm">Adjust the budget here</p>
           </div>
 <br />
           {expenses.length > 0 ? (

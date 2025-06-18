@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { createEnvelope, Envelope, getEnvelopes } from "@/app/utils/localStorage";
+import {
+  createEnvelope,
+  Envelope,
+  getEnvelopes,
+} from "@/app/utils/localStorage";
 import { successToast, warnToast } from "@/app/utils/toast";
 import { envelopeColorsList } from "@/app/utils/colors";
 
@@ -9,20 +13,22 @@ interface EnvelopeModalProps {
 
 export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
   const [title, setTitle] = useState("");
-  const [fixed, setFixed] = useState("");
+  const [fixed, setFixed] = useState<boolean>(false);
   const [budget, setBudget] = useState<number>(0);
- const [comments, setComments] = useState("");
+  const [comments, setComments] = useState("");
   const envelopes = getEnvelopes();
 
-  const pickEnvelopeColor = (): string =>{
+  const pickEnvelopeColor = (): string => {
     for (const color of envelopeColorsList) {
-      const isColorInUse = envelopes.some((envelope) => envelope.color === color);
+      const isColorInUse = envelopes.some(
+        (envelope) => envelope.color === color
+      );
       if (!isColorInUse) {
         return color;
       }
     }
-    return '#DA5151';
-  }
+    return "#DA5151";
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,23 +38,15 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
       return;
     }
 
-    const isFixed = () => {
-      if (fixed === "set") {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-   const assignedColor = pickEnvelopeColor();
+    const assignedColor = pickEnvelopeColor();
 
     const newEnvelope: Envelope = {
       title,
-      fixed: isFixed(),
+      fixed,
       expenses: [],
       icon: "",
       budget,
-      color:assignedColor,
+      color: assignedColor,
       comments,
     };
 
@@ -56,7 +54,7 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
     successToast(`"${newEnvelope.title}" envelope created`);
 
     setTitle("");
-    setFixed("");
+    setFixed(false);
     setBudget(0);
     onClose();
   };
@@ -70,7 +68,7 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
           <div>
             <label
               htmlFor="location"
-              className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white"
+              className="block dark:bg-slate-900 text-sm font-medium text-gray-700 dark:text-white"
             >
               Title<span className="text-red-500">*</span>
             </label>
@@ -86,29 +84,57 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
           </div>
 
           <div>
-            <label
-              htmlFor="date"
-              className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white"
-            >
-              Is this budget <span className="font-semibold">set</span>, or{" "}
+            <label className="block dark:bg-slate-900 text-sm font-medium text-gray-700 dark:text-white mb-2">
+              Is this budget <span className="font-semibold">fixed</span> or{" "}
               <span className="font-semibold">variable</span>?
               <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              id="fixed"
-              name="fixed"
-              value={fixed}
-              onChange={(e) => setFixed(e.target.value)}
-              required
-              className="mt-1 block dark:bg-slate-900 dark:text-white w-full border border-gray-300 rounded-md shadow-sm p-2"
-            />
+            <div className="mt-1 flex items-center space-x-4">
+              {" "}
+              {/* Flex container for radio buttons */}
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="fixed-yes"
+                  name="fixed-budget-type" // IMPORTANT: Use the same 'name' for all radio buttons in a group
+                  value="true"
+                  checked={fixed === true} // Check if 'fixed' state is true
+                  onChange={() => setFixed(true)} // Set fixed to boolean true
+                  required
+                  className="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:text-blue-400 dark:border-gray-600 dark:bg-slate-800"
+                />
+                <label
+                  htmlFor="fixed-yes"
+                  className="ml-2 block text-sm text-gray-900 dark:text-white"
+                >
+                  Fixed
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="fixed-no"
+                  name="fixed-budget-type"
+                  value="false"
+                  checked={fixed === false}
+                  onChange={() => setFixed(false)}
+                  required
+                  className="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:text-blue-400 dark:border-gray-600 dark:bg-slate-800"
+                />
+                <label
+                  htmlFor="fixed-no"
+                  className="ml-2 block text-sm text-gray-900 dark:text-white"
+                >
+                  Variable
+                </label>
+              </div>
+            </div>
           </div>
 
           <div>
             <label
               htmlFor="amount"
-              className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white"
+              className="block dark:bg-slate-900 text-sm font-medium text-gray-700 dark:text-white"
             >
               Total Allowance ($)<span className="text-red-500">*</span>
             </label>
@@ -127,17 +153,19 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
 
           <div>
             <label
-            htmlFor="amount"
-            className="block dark:bg-slate-900 dark:text-white text-sm font-medium text-gray-700 dark:text-white">
+              htmlFor="amount"
+              className="block dark:bg-slate-900 text-sm font-medium text-gray-700 dark:text-white"
+            >
               Comments?
             </label>
-            <input 
-            type="text"
-            id="comments"
-            name="comments"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-            className="mt-1 block dark:bg-slate-900 dark:text-white w-full border border-gray-300 rounded-md shadow-sm p-2"/>
+            <input
+              type="text"
+              id="comments"
+              name="comments"
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              className="mt-1 block dark:bg-slate-900 dark:text-white w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
           </div>
 
           <div className="text-center">

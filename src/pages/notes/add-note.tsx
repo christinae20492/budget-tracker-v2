@@ -1,8 +1,7 @@
 "use client"
 import { useState } from "react"
 import { Note, addLocalNote } from "@/app/utils/localStorage"
-import Auth from "@/app/components/ui/Auth";
-import { failToast, successToast } from "@/app/utils/toast";
+=import { failToast, successToast } from "@/app/utils/toast";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Layout from "@/app/components/ui/Layout";

@@ -18,7 +18,6 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import Auth from "@/app/components/ui/Auth";
 
 ChartJS.register(
   CategoryScale,
@@ -102,21 +101,21 @@ export default function YearlySummary() {
         <title>Your Year In Review</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <h1 className="text-center text-2xl font-bold">Yearly Summary</h1>
+      <h1 className="text-center xl:text-2xl md:text-3xl md:p-2 font-bold">Yearly Summary</h1>
 
       <div className="text-center my-5">
-        <h3 className="text-gray-400">
+        <h3 className="text-gray-400 xl:text-xl md:text-2xl">
           <button onClick={() => setYear(year - 1)}>Previous Year</button>
         </h3>
         <h3>
-          <span>{year}</span>
+          <span className="xl:text-xl md:text-2xl">{year}</span>
         </h3>
-        <h3 className="text-gray-400">
+        <h3 className="text-gray-400 xl:text-xl md:text-2xl">
           <button onClick={() => setYear(year + 1)}>Next Year</button>
         </h3>
       </div>
 
-      <div>
+      <div className="xl:m-0 md:m-3">
         <p className="my-2">Total Income: ${summary.incomeTotals.toFixed(2)}</p>
         <p className="my-2">
           Total Spending: ${summary.expenseTotals.toFixed(2)}
@@ -124,7 +123,7 @@ export default function YearlySummary() {
         <p className="my-2">
           Net Savings: ${summary.spendingDifference.toFixed(2)}
         </p>
-      </div>
+      
 
       <p className="my-2">
         Category with Highest Spending: {summary.highestEnvelope} - $
@@ -133,6 +132,7 @@ export default function YearlySummary() {
       <p className="my-2">
         Most Frequent Purchases Category: {summary.frequentEnvelope}
       </p>
+      </div>
 
       <div className="mt-10">
         <h2 className="text-center text-xl font-semibold">

@@ -1,4 +1,3 @@
-import Auth from "@/app/components/ui/Auth";
 import Layout from "@/app/components/ui/Layout";
 import { getLocalNotes, Note, deleteNote } from "@/app/utils/localStorage";
 import { successToast } from "@/app/utils/toast";

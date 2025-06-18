@@ -8,7 +8,6 @@ import {
 } from "@/app/utils/localStorage";
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
-import Auth from "@/app/components/ui/Auth";
 import SummaryDoughnutChart from "@/app/components/ui/DonutChart";
 import Layout from "@/app/components/ui/Layout";
 

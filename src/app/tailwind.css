@@ -18,7 +18,10 @@
 
 @layer base {
   body {
-    @apply bg-grey-100 text-grey-400 p-12 font-body
+    @apply bg-grey-100 text-grey-400 font-body
+    xl:p-12 xl:text-base
+    md:p-10
+    p-0 text-lg
     dark:bg-black dark:text-white;
   }
 
@@ -38,21 +41,40 @@
 
 @layer components {
   .main-container {
-    @apply p-6 border border-gray-500 rounded-lg shadow-md mt-4 min-h-lvh max-w-screen-2xl mx-auto bg-white
+    @apply xl:p-6 border border-gray-500 xl:rounded-lg shadow-md xl:mt-4 xl:min-h-lvh xl:max-w-screen-2xl mx-auto bg-white
+    sm:mt-12
+    w-full mt-0
     dark:bg-grey-500 dark:border-white;
   }
   .floating-menu {
-    @apply bg-white min-w-64 h-8 rounded-xl border border-gray-400 shadow-md absolute top-4 left-4 content-center
+    @apply bg-white md:min-w-64 h-8 rounded-xl border border-gray-400 shadow-md absolute md:top-4 md:left-4 content-center
+    sm:inline
+    top-2 hidden
     dark:bg-grey-300 dark:text-black;
   }
   .menu-icon {
-    @apply mx-4 hover:text-blue-500 border-blue transition;
+    @apply mx-4 hover:text-blue-500 border-blue transition
+    md:scale-110
+  }
+  .mobile-nav {
+    @apply sm:hidden
+    w-full bg-white py-4
+  }
+  .mobile-icon {
+    @apply scale-150 p-1 mt-6 text-grey-600
   }
   .user-btn {
-    @apply rounded-full p-3 bg-white border-gray-400 border shadow-md;
+    @apply rounded-full md:p-3 bg-white border-gray-400 border shadow-md
+    p-1;
   }
   .header {
     @apply my-5 text-center;
+  }
+  .expense-modal {
+    @apply xl:w-1/3 xl:h-1/3 xl:top-1/2 xl:my-0 xl:bottom-0
+
+    absolute border-2 border-grey-300  z-10 mx-auto shadow-lg bg-white rounded p-4 w-full left-0 bottom-1/4
+  dark:bg-gray-700 dark:border-grey-600
   }
   .exp-inc-item {
     @apply border border-grey-100 rounded-xl max-w-3xl mx-auto p-4 shadow-md text-lg list-none
@@ -63,7 +85,9 @@
     hover:text-white hover:p-2 hover:w-1/3 hover:bg-red hover:rounded-lg;
   }
   .comparison-table {
-    @apply w-1/2 h-32 table-fixed border-2 rounded-2xl border-grey-200;
+    @apply xl:w-1/2 h-32 table-fixed border-2 rounded-2xl border-grey-200
+    md:w-3/4
+    w-full;
   }
   .table-item-grey {
     @apply bg-grey-200;
@@ -87,7 +111,7 @@
     @apply block;
   }
   .envelope-grid {
-    @apply grid grid-cols-4;
+    @apply grid xl:grid-cols-4 md:grid-cols-2;
   }
   .envelope {
     @apply max-w-60 min-h-24 max-h-36 my-3 bg-pink/10 cursor-pointer mx-auto border-grey-600 border-2 rounded-md shadow-md text-balance
@@ -106,14 +130,19 @@
     @apply fixed inset-0 bg-black opacity-50;
   }
   .modal-main {
-    @apply relative w-1/3 h-1/2 mx-auto p-6 bg-white rounded-lg shadow-md z-10
+    @apply relative xl:w-1/3 h-1/2 mx-auto p-6 bg-white rounded-lg shadow-md z-10
+    md:w-4/5
     dark:bg-gray-800;
   }
-  .envelopes-summary {
-    @apply grid grow grid-cols-3 max-w-full mx-auto place-content-evenly overflow-x-auto;
+  .envelope-budget-container {
+    @apply grid grow xl:grid-cols-3 max-w-full mx-auto overflow-x-auto justify-items-center
+    md:grid-cols-2
+    grid-cols-1;
   }
   .summary-envelope {
-    @apply w-96 max-h-44 bg-slate-200 p-4 m-4 rounded outline outline-cyan-950 drop-shadow-md overflow-y-auto
+    @apply xl:w-4/5 max-h-44 text-justify bg-slate-200 p-4 m-4 rounded outline outline-cyan-950 drop-shadow-md overflow-y-auto
+    md:w-11/12
+    w-3/4
     dark:bg-grey-600 dark:outline-cyan-300;
   }
   .button {
@@ -125,6 +154,10 @@
   }
   .import-btn {
     @apply p-4;
+  }
+  .edit-list-container {
+    @apply md:max-h-svh overflow-y-scroll
+    max-h-80
   }
   .amplify-input {
     @apply bg-pink;

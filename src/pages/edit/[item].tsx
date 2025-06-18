@@ -12,7 +12,6 @@ import {
 } from "@/app/utils/localStorage";
 import Layout from "@/app/components/ui/Layout";
 import Head from "next/head";
-import Auth from "@/app/components/ui/Auth";
 import ItemView from "@/app/components/ui/ItemView";
 
 export default function EditEnvelope() {

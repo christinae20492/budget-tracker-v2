@@ -13,14 +13,8 @@ import {
   getEnvelopes,
   Envelope,
 } from "@/app/utils/localStorage";
-import { getExpenses } from "@/app/utils/dynamotest";
 import ToggleSwitch from "@/app/components/ui/ToggleSwitch";
 import Layout from "@/app/components/ui/Layout";
-import awsmobile from "@/aws-exports";
-import { Amplify } from "aws-amplify";
-import Auth from "@/app/components/ui/Auth";
-
-Amplify.configure(awsmobile)
 
 export default function ExpenseCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,9 +37,6 @@ export default function ExpenseCalendar() {
     setCalendarView(window.innerWidth < 1000 ? "dayGridWeek" : "dayGridMonth");
   };
 
-const fetchExpenses = async () =>{
-      setExpenses(await getExpenses());
-}
 
   useEffect(() => {
 //fetchExpenses();

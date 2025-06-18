@@ -10,12 +10,8 @@ import {
   Expense,
   getEnvelopes,
 } from "@/app/utils/localStorage";
-import { addExpense } from "@/app/utils/dynamotest";
 import { successToast, warnToast } from "@/app/utils/toast";
 import Head from "next/head";
-import Auth from "@/app/components/ui/Auth";
-import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
-import { AuthUser } from "@aws-amplify/auth";
 import Layout from "@/app/components/ui/Layout";
 
 export default function AddExpenses() {
@@ -81,7 +77,8 @@ export default function AddExpenses() {
                 content="width=device-width, initial-scale=1"
               />
             </Head>
-            <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
+            <div className="md:max-w-xl mx-auto md:mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white
+            w-full mt-1">
               <h2 className="text-center">Add New Expense</h2>
               <form
                 onSubmit={(e) => handleSubmit(e)}

@@ -9,8 +9,6 @@ import {
   generateIncomeId,
   Income,
 } from "@/app/utils/localStorage";
-import Auth from "@/app/components/ui/Auth";
-import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
 import Layout from "@/app/components/ui/Layout";
 
 export default function AddIncome() {
@@ -75,7 +73,8 @@ export default function AddIncome() {
               />
             </Head>
 
-            <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
+            <div className="md:max-w-xl mx-auto md:mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white
+            w-full mt-1">
               <h2 className="text-center">Add Income</h2>
               <form
                 onSubmit={(e) =>

@@ -11,7 +11,6 @@ import {
   deleteExpense,
 } from "@/app/utils/localStorage";
 import Layout from "@/app/components/ui/Layout";
-import Auth from "@/app/components/ui/Auth";
 import { successToast } from "@/app/utils/toast";
 
 export default function DayDetails() {

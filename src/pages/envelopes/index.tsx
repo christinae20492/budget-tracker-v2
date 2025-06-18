@@ -19,7 +19,6 @@ import {
 import { warnToast } from "@/app/utils/toast";
 import Layout from "@/app/components/ui/Layout";
 import AddEnvelope from "@/app/components/ui/EnvelopeModal";
-import Auth from "@/app/components/ui/Auth";
 import { faRectangleList } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 

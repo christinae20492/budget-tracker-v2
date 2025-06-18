@@ -15,7 +15,6 @@ import { formatCurrency, getFormattedDate } from "@/app/utils/expenses";
 import { useRouter } from "next/navigation";
 import DataManagement from "@/app/components/ui/DataButtons";
 import Head from "next/head";
-import Auth from "@/app/components/ui/Auth";
 
 export default function ManageExpenses() {
   const [expenses, setExpenses] = useState(getLocalExpenses());
@@ -96,11 +95,11 @@ export default function ManageExpenses() {
       </Head>
       <h1 className="header">Manage Expenses, Incomes, and Envelopes</h1>
       <DataManagement />
-      <div className="grid grid-cols-3 gap-4 mt-6">
+      <div className="grid md:max-h-none xl:grid-cols-3 md:grid-cols-2 md:items-center grid-cols-1 overflow-y-auto max-h-fit gap-4 mt-6">
         {/* Expenses */}
         <div>
           <h2 className="font-bold text-xl">Expenses</h2>
-          <div className="expense-list max-h-svh overflow-y-scroll">
+          <div className="edit-list-container">
             {expenses.map((expense) => (
               <div
                 key={expense.id}
@@ -118,7 +117,7 @@ export default function ManageExpenses() {
         {/* Incomes */}
         <div>
           <h2 className="font-bold text-xl">Incomes</h2>
-          <div className="income-list max-h-svh overflow-y-scroll">
+          <div className="edit-list-container">
             {incomes.map((income) => (
               <div
                 key={income.id}
@@ -136,7 +135,7 @@ export default function ManageExpenses() {
         {/* Envelopes */}
         <div>
           <h2 className="font-bold text-xl">Envelopes</h2>
-          <div className="envelope-list max-h-svh overflow-y-scroll">
+          <div className="edit-list-container">
             {envelopes.map((envelope) => (
               <div
                 key={envelope.title}

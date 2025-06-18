@@ -17,7 +17,6 @@ import { warnToast } from "@/app/utils/toast";
 import Link from "next/link";
 import LoadingScreen from "@/app/components/ui/Loader";
 import Head from "next/head";
-import Auth from "@/app/components/ui/Auth";
 
 export default function MonthlySummary() {
   const [summary, setSummary] = useState<ReturnType<
@@ -118,7 +117,7 @@ export default function MonthlySummary() {
       <h3 className="text-right p-3 text-green-dark dark:text-black hover:text-green">
         <Link href={"/monthly-summary/year-review"}>View the Year</Link>
       </h3>
-      <div>
+      <div className="xl:m-0 m-4">
         <p className="my-2">
           Total Income: ${summary?.incomeTotals.toFixed(2) ?? 0}
         </p>
@@ -132,7 +131,7 @@ export default function MonthlySummary() {
           Spending Compared to Last Month: $
           {summary?.spendingComparison.toFixed(2) ?? 0}
         </p>
-      </div>
+      
       <p className="my-2">
         Category with Highest Spending: {summary?.highestEnvelope} with $
         {summary?.highestAmount.toFixed(2)}
@@ -144,9 +143,10 @@ export default function MonthlySummary() {
         Location w Highest Spending: {summary?.highestSpendingLocation} with $
         {summary?.highestSpendingAmount.toFixed(2)}
       </p>
+      </div>
 
       <h2 className="text-center mt-4">Envelope Budgets</h2>
-      <div className="envelopes-summary">
+      <div className="envelope-budget-container">
         {currentEnvelopes.map((env) => {
           const totalSpent = totalSpend(env);
           const isOverBudget = env.fixed && totalSpent > (env.budget ?? 0);

@@ -6,7 +6,6 @@ import Head from "next/head";
 import { getEnvelopes, Envelope, Expense, getExpensesForEnvelope, getLocalExpenses } from "@/app/utils/localStorage";
 import { getFormattedDate } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
-import Auth from "@/app/components/ui/Auth";
 import Layout from "@/app/components/ui/Layout";
 
 export default function EnvelopeDetails() {
