@@ -10,12 +10,14 @@ import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import SummaryDoughnutChart from "@/app/components/ui/DonutChart";
 import Layout from "@/app/components/ui/Layout";
-import { warnToast } from "@/app/utils/toast";
+import { successToast, warnToast } from "@/app/utils/toast";
 import router from "next/router";
 import { useSession } from "next-auth/react";
+import LoadingScreen from "@/app/components/ui/Loader";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(false);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [summary, setSummary] = useState({
     incomeTotals: 0,
@@ -34,10 +36,17 @@ export default function Index() {
        }
 
      useEffect(() => {
-  if (status === "authenticated") return;
+   setLoading(true)
+if (status === "loading") return;
+
+  if (status === "authenticated" && session) {
+    setLoading(false);
+            successToast(`Welcome back, ${session?.user.username}`);
+    return;
+  };
 
   if (status === "unauthenticated") {
-    warnToast("Please login tO access this page.")
+    warnToast("Please login to access this page.")
     router.push("/auth/login")
   }
 }, [status, router]);
@@ -84,6 +93,10 @@ export default function Index() {
       return `Why are you looking here? There's nothing to report. Get to budgeting already!`;
     }
   };
+
+  if (loading) {
+    return <LoadingScreen />
+  }
 
   return (
     <Layout>

@@ -88,33 +88,46 @@ export const authOptions = {
       },
     }),
   ],
-  session: {
-    strategy: "jwt"
+   session: {
+    strategy: "jwt" // Top-level property
   },
-  callbacks: {
+  cookies: { // Top-level property
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.startsWith('https://'),
+      },
+    },
+  },
+  callbacks: { // Top-level property
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id; 
-        token.email = user.email;
+        token.id = user.id;
+        token.email = user.email; // Ensure email is on token
         token.username = (user as any).username;
       }
+      console.log("CALLBACK: JWT Token after processing:", token);
       return token;
     },
     async session({ session, token }) {
       if (token.id) {
         session.user.id = token.id as string;
         session.user.username = token.username as string;
+        session.user.email = token.email as string; // Ensure email is on session
       }
+      console.log("CALLBACK: Session object after processing:", session);
       return session;
     },
   },
-  // You can define custom pages here for sign-in, error, etc.
-  pages: {
-     signIn: "/auth/login", // Example: if you have a custom sign-in page at pages/auth/signin.tsx
-  //   error: "/auth/error", // Error code passed in query string as ?error=
-   },
-   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development", // Debug mode (turn off in production)
+  pages: { // Top-level property
+    signIn: "/auth/login",
+    // error: "/auth/error", // Uncomment if you want to use a custom error page
+  },
+  secret: process.env.NEXTAUTH_SECRET, // Top-level property
+  debug: process.env.NODE_ENV === "development", // Top-level property
 };
 
 export default NextAuth(authOptions);

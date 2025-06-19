@@ -45,10 +45,7 @@ const RegisterPage: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        successToast(data.message || "Registration successful! You can now sign in.");
         router.push("/auth/login");
-      } else {
-        failToast(data.message || "Registration failed. Please try again.");
       }
     } catch (error) {
       console.error("An unexpected error occurred during registration:", error);
