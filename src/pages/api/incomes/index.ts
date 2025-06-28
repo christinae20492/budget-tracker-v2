@@ -34,7 +34,7 @@ export default async function handler(
     case "GET":
       console.log(`API: User ${userId} is requesting all incomes.`);
       try {
-        const getIncomes: Income[] = await prisma.income.findMany({
+        const getIncomes = await prisma.income.findMany({
           where: {
             userId: userId,
           },
@@ -60,16 +60,20 @@ export default async function handler(
       }
 
       try {
-        const newIncome: NewIncome = await prisma.income.create({
+        const newIncome = await prisma.income.create({
           data: {
-            id: Date.now(),
+            id: uuidv4(),
             source: source,
             savings: savings,
             date: date,
             amount: amount,
             investments: investments,
             remainder: remainder,
-            userId: userId,
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
           },
         });
         return res

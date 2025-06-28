@@ -1,4 +1,6 @@
-import { Envelope, Expense, getEnvelopes, Income } from "./localStorage";
+import { Envelope, Expense, Income } from "./types";
+import { getAllEnvelopes } from "../server/envelopes";
+import { useSession } from "next-auth/react";
 
 // ✅ Ensure the function always returns a string
 export function getFormattedDate(
@@ -254,8 +256,9 @@ export function getYearlyExpenditureDetails(
   };
 }
 
-export const getBudgetLimits = () => {
-  const envelopes = getEnvelopes();
+export const getBudgetLimits = async (session: any, status: string) => {
+  const envelopes = await getAllEnvelopes(session, status);
+  if (!envelopes) return null;
   return envelopes.map((env) => ({ title: env.title, budget: env.budget }));
 };
 

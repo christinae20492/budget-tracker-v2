@@ -2,24 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import {
-  getEnvelopes,
-  Envelope,
-  Expense,
-  Income,
-  getLocalIncome,
-  getLocalExpenses,
-} from "@/app/utils/localStorage";
 import Layout from "@/app/components/ui/Layout";
 import Head from "next/head";
 import ItemView from "@/app/components/ui/ItemView";
+import { useSession } from "next-auth/react";
+import { getAllData } from "@/app/server/data";
+import { Envelope, Expense, Income } from "@/app/utils/types";
+import LoadingScreen from "@/app/components/ui/Loader";
 
 export default function EditEnvelope() {
   const router = useRouter();
   const { item } = router.query;
+  
 
   const [envelope, setEnvelope] = useState<Envelope | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
   const [returns, setReturns] = useState<any>([]);
 
@@ -33,50 +32,54 @@ export default function EditEnvelope() {
     let expenseItem;
     let incomeItem;
 
-    const foundEnv = envelopesArray.find((env) => env.title === input);
-    if (foundEnv) {
-      envelopeItem = foundEnv;
-      expenseItem = null;
-      incomeItem = null;
-      return { envelopeItem, expenseItem, incomeItem };
-    } else if (!foundEnv) {
-      let itemAsNum = +input;
-      const foundExpense = expenseArray.find(
-        (expense) => expense.id === itemAsNum
-      );
-      if (foundExpense) {
-        expenseItem = foundExpense;
-        incomeItem = null;
-        envelopeItem = null;
-      } else {
-        const foundIncome = incomeArray.find(
-          (income) => income.id === itemAsNum
-        );
-        if (foundIncome) {
-          incomeItem = foundIncome;
-          expenseItem = null;
-          envelopeItem = null;
-        }
-      }
-    } else {
-      envelopeItem = null;
-      expenseItem = null;
-      incomeItem = null;
-    }
+    const id = Array.isArray(input) ? input[0] : input;
+
+  if (!id) {
+    return { envelopeItem, expenseItem, incomeItem };
+  }
+
+  envelopeItem = envelopesArray.find(env => env.id === id) || null;
+
+  if (envelopeItem) {
+    return { envelopeItem, expenseItem: null, incomeItem: null };
+  }
+
+  expenseItem = expenseArray.find(exp => exp.id === id) || null;
+
+  if (expenseItem) {
+    return { envelopeItem: null, expenseItem, incomeItem: null };
+  }
+
+  incomeItem = incomeArray.find(inc => inc.id === id) || null;
+
+  if (incomeItem) {
+    return { envelopeItem: null, expenseItem: null, incomeItem };
+  }
 
     return { envelopeItem, expenseItem, incomeItem };
   };
 
+   const fetchData = async() =>{
+    setLoading(true);
+    const data = await getAllData(session, status)
+    const allExp = data?.expenses;
+    const allEnv = data?.envelopes;
+    const allInc = data?.incomes;
+    
+    if (allExp.length && allEnv.length && allInc.length) {
+      setReturns(assignItem(item, allEnv, allExp, allInc));
+    }
+    setLoading(false);
+  }
+
   useEffect(() => {
     if (!item) return;
-    const expenseArray = getLocalExpenses();
-    const incomeArray = getLocalIncome();
-    const envelopesArray = getEnvelopes();
+  fetchData()
+  }, [item, status]);
 
-    if (expenseArray.length && envelopesArray.length && incomeArray.length) {
-      setReturns(assignItem(item, envelopesArray, expenseArray, incomeArray));
-    }
-  }, [item]);
+  if (loading) {
+    return <LoadingScreen />
+  }
 
   return (
     <Layout>

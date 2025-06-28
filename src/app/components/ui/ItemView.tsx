@@ -1,11 +1,3 @@
-import {
-  Expense,
-  Envelope,
-  Income,
-  getEnvelopes,
-  getExpensesForEnvelope,
-  getLocalExpenses,
-} from "@/app/utils/localStorage";
 import React, { useEffect, useRef, useState } from "react";
 import { EditForm } from "./EditForms";
 import dynamic from "next/dynamic";
@@ -14,6 +6,10 @@ const Slider = dynamic(() => import("rc-slider"), { ssr: false });
 import "rc-slider/assets/index.css";
 
 import { successToast } from "@/app/utils/toast";
+import { Expense } from "@/app/utils/types";
+import { getEnvelopeExpenses, updateEnvelope } from "@/app/server/envelopes";
+import { useSession } from "next-auth/react";
+import LoadingScreen from "./Loader";
 
 interface ItemViewProps {
   envelopeItem: any;
@@ -30,18 +26,29 @@ const ItemView: React.FC<ItemViewProps> = ({
   let [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgetValue, setBudgetValue] = useState<number>(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
+  const fetchData = async () => {
+    setLoading(true);
     if (envelopeItem && !expenseItem && !incomeItem) {
       setCurrentItemType("envelope");
-      const expenseArray = getLocalExpenses();
-      const fullExpenses = getExpensesForEnvelope(envelopeItem, expenseArray);
+      const fullExpenses = await getEnvelopeExpenses(
+        envelopeItem.id,
+        session,
+        status
+      );
       setExpenses(fullExpenses);
     } else if (expenseItem && !envelopeItem && !incomeItem) {
       setCurrentItemType("expense");
     } else if (incomeItem && !envelopeItem && !expenseItem) {
       setCurrentItemType("income");
     }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [envelopeItem, expenseItem, incomeItem, budgetValue]);
 
   useEffect(() => {
@@ -56,36 +63,32 @@ const ItemView: React.FC<ItemViewProps> = ({
     };
   }, []);
 
-  const deleteEnvelopeExpense = (id: number) => {
-    if (!envelopeItem) return;
-
-    const updatedExpenses = expenses.filter((expense) => expense.id !== id);
-    setExpenses(updatedExpenses);
-
-    const updatedEnvelope = { ...envelopeItem, expenses: updatedExpenses };
-    const updatedEnvelopes = getEnvelopes().map((env) =>
-      env.title === envelopeItem.title ? updatedEnvelope : env
-    );
-
-    localStorage.setItem("envelopes", JSON.stringify(updatedEnvelopes));
-  };
-
   const handleBudgetChange = (value: number) => {
     setBudgetValue(value);
 
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-    saveTimeoutRef.current = setTimeout(() => {
+    saveTimeoutRef.current = setTimeout(async () => {
       if (envelopeItem) {
-        const updatedEnvelope = { ...envelopeItem, budget: value };
-        const updatedEnvelopes = getEnvelopes().map((env) =>
-          env.title === envelopeItem.title ? updatedEnvelope : env
+        await updateEnvelope(
+          envelopeItem.id,
+          { budget: value },
+          session,
+          status
         );
-        localStorage.setItem("envelopes", JSON.stringify(updatedEnvelopes));
+
         successToast(`${envelopeItem.title}'s was budget updated to $${value}`);
       }
     }, 800);
   };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  function handleDeleteExp(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="max-w-2xl mx-auto mt-16">
@@ -118,7 +121,7 @@ const ItemView: React.FC<ItemViewProps> = ({
             />
             <p className="text-center text-sm">Adjust the budget here</p>
           </div>
-<br />
+          <br />
           {expenses.length > 0 ? (
             <ul className="text-center mx-auto">
               {expenses.map((expense) => (
@@ -128,7 +131,7 @@ const ItemView: React.FC<ItemViewProps> = ({
                   </li>
                   <button
                     className="exp-inc-btn"
-                    onClick={() => deleteEnvelopeExpense(expense.id)}
+                    onClick={handleDeleteExp}
                   >
                     Delete
                   </button>

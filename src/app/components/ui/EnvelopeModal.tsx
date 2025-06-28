@@ -1,23 +1,24 @@
 import { useState } from "react";
-import {
-  createEnvelope,
-  Envelope,
-  getEnvelopes,
-} from "@/app/utils/localStorage";
+import { Envelope } from "@/app/utils/types";
 import { successToast, warnToast } from "@/app/utils/toast";
 import { envelopeColorsList } from "@/app/utils/colors";
+import { createEnvelope, getAllEnvelopes } from "@/app/server/envelopes";
+import { useSession } from "next-auth/react";
+import LoadingScreen from "./Loader";
 
 interface EnvelopeModalProps {
   onClose: () => void;
+  envelopes: Envelope[]
 }
 
-export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
+export default function AddEnvelope({ onClose, envelopes }: EnvelopeModalProps) {
   const [title, setTitle] = useState("");
   const [fixed, setFixed] = useState<boolean>(false);
   const [budget, setBudget] = useState<number>(0);
   const [comments, setComments] = useState("");
-  const envelopes = getEnvelopes();
-
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
+ 
   const pickEnvelopeColor = (): string => {
     for (const color of envelopeColorsList) {
       const isColorInUse = envelopes.some(
@@ -30,34 +31,39 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
     return "#DA5151";
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    if (!title || !fixed || !budget) {
+    if (!title || !budget) {
       warnToast("Please fill in all required fields.");
       return;
     }
 
     const assignedColor = pickEnvelopeColor();
 
-    const newEnvelope: Envelope = {
+    const newEnvelope = {
       title,
       fixed,
-      expenses: [],
       icon: "",
       budget,
       color: assignedColor,
       comments,
     };
 
-    createEnvelope(newEnvelope);
+   await createEnvelope(newEnvelope, session, status);
     successToast(`"${newEnvelope.title}" envelope created`);
+    setLoading(false);
 
     setTitle("");
     setFixed(false);
     setBudget(0);
     onClose();
   };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="modal-bg">
@@ -91,15 +97,14 @@ export default function AddEnvelope({ onClose }: EnvelopeModalProps) {
             </label>
             <div className="mt-1 flex items-center space-x-4">
               {" "}
-              {/* Flex container for radio buttons */}
               <div className="flex items-center">
                 <input
                   type="radio"
                   id="fixed-yes"
-                  name="fixed-budget-type" // IMPORTANT: Use the same 'name' for all radio buttons in a group
+                  name="fixed-budget-type"
                   value="true"
-                  checked={fixed === true} // Check if 'fixed' state is true
-                  onChange={() => setFixed(true)} // Set fixed to boolean true
+                  checked={fixed === true}
+                  onChange={() => setFixed(true)}
                   required
                   className="form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:text-blue-400 dark:border-gray-600 dark:bg-slate-800"
                 />

@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]';
 import prisma from '@/app/prisma';
-import { Expense, EditExpense } from '@/app/utils/types'; 
+import { Income, EditIncome } from '@/app/utils/types'; 
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,19 +12,19 @@ export default async function handler(
       const session = await getServerSession(req, res, authOptions);
 
   if (!session) {
-    console.warn(`API: Unauthorized attempt to move expense (no session).`);
+    console.warn(`API: Unauthorized attempt to move income (no session).`);
     return res.status(401).json({ message: 'Unauthorized: No active session.' });
   }
 
   const { id } = req.query;
 
   if (!id || typeof id !== 'string') {
-    return res.status(400).json({ error: 'Expense ID is required and must be a string.' });
+    return res.status(400).json({ error: 'Income ID is required and must be a string.' });
   }
 
-  const expenseId = parseInt(id, 10);
-  if (isNaN(expenseId)) {
-    return res.status(400).json({ error: 'Invalid expense ID provided. Must be a number.' });
+  const incomeId = parseInt(id, 10);
+  if (isNaN(incomeId)) {
+    return res.status(400).json({ error: 'Invalid income ID provided. Must be a number.' });
   }
 
     const userId = session.user.id;
@@ -36,62 +36,62 @@ export default async function handler(
 
   try {
     if (req.method === 'GET') {
-      const expense = await prisma.expense.findUnique({
-        where: { id: expenseId,
+      const income = await prisma.income.findUnique({
+        where: { id: incomeId,
             userId: userId,
          },
       });
 
-      if (!expense) {
-        return res.status(404).json({ error: 'Expense not found.' });
+      if (!income) {
+        return res.status(404).json({ error: 'Income not found.' });
       }
 
-      return res.status(200).json(expense);
+      return res.status(200).json(income);
 
     }
 
     else if (req.method === 'PATCH') {
-      const updateData: EditExpense = req.body;
+      const updateData: EditIncome = req.body;
 
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({ error: 'No update data provided.' });
       }
 
-      const existingexpense = await prisma.expense.findUnique({
-        where: { id: expenseId,
+      const existingincome = await prisma.income.findUnique({
+        where: { id: incomeId,
             userId: userId
          },
       });
 
-      if (!existingexpense) {
-        return res.status(404).json({ error: 'Expense not found.' });
+      if (!existingincome) {
+        return res.status(404).json({ error: 'Income not found.' });
       }
 
 
-      const updatedExpense = await prisma.expense.update({
-        where: { id: expenseId,
+      const updatedincome = await prisma.income.update({
+        where: { id: incomeId,
             userId: userId
          },
         data: updateData,
       });
 
-      return res.status(200).json(updatedExpense);
+      return res.status(200).json(updatedincome);
 
     }
 
     else if (req.method === 'DELETE') {
-      const existingExpense = await prisma.expense.findUnique({
-        where: { id: expenseId,
+      const existingincome = await prisma.income.findUnique({
+        where: { id: incomeId,
             userId: userId
          },
       });
 
-      if (!existingExpense) {
-        return res.status(404).json({ error: 'Expense not found.' });
+      if (!existingincome) {
+        return res.status(404).json({ error: 'Income not found.' });
       }
 
-      await prisma.expense.delete({
-        where: { id: expenseId },
+      await prisma.income.delete({
+        where: { id: incomeId },
       });
 
       return res.status(204).end();
@@ -103,7 +103,7 @@ export default async function handler(
       return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
   } catch (error) {
-    console.error(`API Error for expense ID ${expenseId}:`, error);
+    console.error(`API Error for income ID ${incomeId}:`, error);
     return res.status(500).json({ error: 'An unexpected server error occurred.' });
   }
 }

@@ -34,7 +34,7 @@ export default async function handler(
     case "GET":
       console.log(`API: User ${userId} is requesting all notes.`);
       try {
-        const getNotes: Note[] = await prisma.notes.findMany({
+        const getNotes = await prisma.note.findMany({
           where: {
             userId: userId,
           },
@@ -59,7 +59,7 @@ export default async function handler(
       }
 
       try {
-        const newNote: NewNote = await prisma.note.create({
+        const newNote = await prisma.note.create({
           data: {
             id: Date.now(),
             month: month,

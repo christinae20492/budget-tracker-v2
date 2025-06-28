@@ -12,8 +12,9 @@ import SummaryDoughnutChart from "@/app/components/ui/DonutChart";
 import Layout from "@/app/components/ui/Layout";
 import { successToast, warnToast } from "@/app/utils/toast";
 import router from "next/router";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
+import { getAllData } from "@/app/server/data";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -29,32 +30,35 @@ export default function Index() {
     highestAmount: 0,
     frequentLocation: "",
   });
-       const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
 
-       const sleep = (ms: number) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-       }
-
-     useEffect(() => {
-   setLoading(true)
-if (status === "loading") return;
-
-  if (status === "authenticated" && session) {
-    setLoading(false);
-            successToast(`Welcome back, ${session?.user.username}`);
-    return;
+  const sleep = (ms: number) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   };
 
-  if (status === "unauthenticated") {
-    warnToast("Please login to access this page.")
-    router.push("/auth/login")
-  }
-}, [status, router]);
+  useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      successToast(`Welcome back, ${session?.user.username}`);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      sleep(3500);
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, router]);
 
   useEffect(() => {
-    const fetchData = async() => {
-      const storedExpenses = getLocalExpenses();
-      const storedIncomes = getLocalIncome();
+    const fetchData = async () => {
+      const data = await getAllData(session, status);
+      if (!data) return null;
+      const storedExpenses = data.expenses;
+      const storedIncomes = data.incomes;
       const details = getMonthlyExpenditureDetails(
         storedIncomes,
         storedExpenses
@@ -74,7 +78,7 @@ if (status === "loading") return;
     };
 
     if (session) {
-    fetchData();
+      fetchData();
     }
   }, []);
 
@@ -95,7 +99,7 @@ if (status === "loading") return;
   };
 
   if (loading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
   return (

@@ -34,7 +34,7 @@ export default async function handler(
     case "GET":
       console.log(`API: User ${userId} is requesting all envelopes.`);
       try {
-        const getEnvelopes: Envelope[] = await prisma.envelopes.findMany({
+        const getEnvelopes = await prisma.envelope.findMany({
           where: {
             userId: userId,
           },
@@ -52,7 +52,7 @@ export default async function handler(
 
     case "POST":
       console.log(`API: User ${userId} is attempting to create an envelope.`);
-      const { title, fixed, budget, expenses, icon, color, comments } =
+      const { title, fixed, budget, icon, color, comments } =
         req.body;
 
       if (!title || !budget) {
@@ -60,16 +60,15 @@ export default async function handler(
       }
 
       try {
-        const newEnvelope: NewEnvelope = await prisma.expense.create({
+        const newEnvelope: Envelope = await prisma.envelope.create({
           data: {
-            id: Date.now(),
-            title: title,
-            fixed: fixed,
-            budget: budget,
-            expenses: expenses,
-            comments: comments,
-            icon: icon,
-            color: color,
+            id: uuidv4(),
+            title,
+            fixed,
+            budget,
+            comments,
+            icon,
+            color,
             userId: userId,
           },
         });

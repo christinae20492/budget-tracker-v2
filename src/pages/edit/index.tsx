@@ -1,25 +1,18 @@
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import Layout from "@/app/components/ui/Layout";
-import {
-  getLocalExpenses,
-  getLocalIncome,
-  deleteExpense,
-  deleteIncome,
-  getEnvelopes,
-  deleteEnvelope,
-  Expense,
-  Envelope,
-  Income,
-} from "@/app/utils/localStorage";
 import { formatCurrency, getFormattedDate } from "@/app/utils/expenses";
 import { useRouter } from "next/navigation";
 import DataManagement from "@/app/components/ui/DataButtons";
 import Head from "next/head";
+import { getAllData } from "@/app/server/data";
+import { useSession } from "next-auth/react";
+import { Envelope, Expense, Income } from "@/app/utils/types";
+import LoadingScreen from "@/app/components/ui/Loader";
 
 export default function ManageExpenses() {
-  const [expenses, setExpenses] = useState(getLocalExpenses());
-  const [incomes, setIncomes] = useState(getLocalIncome());
-  const [envelopes, setEnvelopes] = useState(getEnvelopes());
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
   const [selectedItem, setSelectedItem] = useState<
     Expense | Income | Envelope | null
   >(null);
@@ -27,54 +20,31 @@ export default function ManageExpenses() {
   const [type, setType] = useState("");
   const [isMoveDropdownVisible, setIsMoveDropdownVisible] = useState(false);
   const [selectedEnvelope, setSelectedEnvelope] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
   const router = useRouter();
 
+  const fetchData = async() =>{
+        setLoading(true);
+
+    const data = await getAllData(session, status)
+    const allExp = data?.expenses;
+    const allEnv = data?.envelopes;
+    const allInc = data?.incomes;
+    setExpenses(allExp);
+    setIncomes(allInc);
+    setEnvelopes(allEnv);
+        setLoading(false);
+
+  }
+
+  useEffect(()=>{
+    fetchData();
+  },[status])
+
   const updateExpenses = (updatedExpenses: Expense[]) => {
     localStorage.setItem("expenses", JSON.stringify(updatedExpenses));
-  };
-
-  const handleDelete = async (id: number) => {
-    if (type === "expense") {
-      await deleteExpense(id);
-      setExpenses(getLocalExpenses());
-    } else if (type === "income") {
-      await deleteIncome(id);
-      setIncomes(getLocalIncome());
-    }
-    setIsModalVisible(false);
-  };
-
-  const deleteEnv = async (title: string) => {
-    await deleteEnvelope(title);
-    setEnvelopes(getEnvelopes());
-    setIsModalVisible(false);
-  };
-
-  const handleMove = async () => {
-    if (!selectedItem || !("id" in selectedItem)) return;
-
-    const updatedExpenses = expenses
-      .map((expense) =>
-        expense.id === selectedItem.id
-          ? { ...expense, envelope: selectedEnvelope }
-          : expense
-      )
-      .filter(Boolean) as Expense[];
-
-    updateExpenses(updatedExpenses);
-    setExpenses(getLocalExpenses());
-    setIsMoveDropdownVisible(false);
-    setIsModalVisible(false);
-  };
-
-  const openModal = (
-    item: Expense | Income | Envelope,
-    itemType: "expense" | "income" | "envelope"
-  ) => {
-    setSelectedItem(item);
-    setType(itemType);
-    setIsModalVisible(true);
   };
 
   const handleItemClick = (item: any) =>{
@@ -83,9 +53,13 @@ export default function ManageExpenses() {
   }
 
   const handleEnvClick = (env: any) =>{
-    const params = env.title;
+    const params = env.id;
     router.push(`edit/${params}`)
   }
+
+if (loading) {
+  return <LoadingScreen />
+}
 
   return (
     <Layout>

@@ -4,7 +4,6 @@ import Head from "next/head";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import ExpenseModal from "@/app/components/ui/ExpenseModal";
 import {
   getLocalExpenses,
   Expense,
@@ -15,6 +14,10 @@ import {
 } from "@/app/utils/localStorage";
 import ToggleSwitch from "@/app/components/ui/ToggleSwitch";
 import Layout from "@/app/components/ui/Layout";
+import { getAllData } from "@/app/server/data";
+import { useSession } from "next-auth/react";
+import LoadingScreen from "@/app/components/ui/Loader";
+import CalendarModal from "@/app/components/ui/CalendarModal";
 
 export default function ExpenseCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,20 +32,30 @@ export default function ExpenseCalendar() {
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
 
   const [calendarView, setCalendarView] = useState("dayGridMonth");
-
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   type ViewType = "expenses" | "income" | "both";
 
   const updateView = () => {
     setCalendarView(window.innerWidth < 1000 ? "dayGridWeek" : "dayGridMonth");
   };
 
+  const fetchData = async () => {
+    setLoading(true);
+    const data = await getAllData(session, status);
+    if (!data) return null;
+    const allExp = data.expenses;
+    const allInc = data.incomes;
+    const allEnv = data.envelopes;
+    setExpenses(allExp);
+    setIncomes(allInc);
+    setEnvelopes(allEnv);
+    setLoading(false)
+  };
 
   useEffect(() => {
-//fetchExpenses();
-setExpenses(getLocalExpenses());
-    setIncomes(getLocalIncome());
-    setEnvelopes(getEnvelopes());
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -108,6 +121,10 @@ setExpenses(getLocalExpenses());
     return [...expenseEvents, ...incomeEvents];
   }, [view, expenses, incomes, envelopes]);
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <Layout>
       <Head>
@@ -129,11 +146,12 @@ setExpenses(getLocalExpenses());
         footerToolbar={{ center: "dayGridMonth,timeGridWeek,timeGridDay" }}
       />
 
-      <ExpenseModal
+      <CalendarModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         expenses={selectedDateExpenses}
         incomes={selectedDateIncome}
+        envelopes={envelopes}
         selectedDate={selectedDate}
         view={view}
       />

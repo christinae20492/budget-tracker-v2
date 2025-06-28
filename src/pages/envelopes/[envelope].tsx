@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { getEnvelopes, Envelope, Expense, getExpensesForEnvelope, getLocalExpenses } from "@/app/utils/localStorage";
 import { getFormattedDate } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
 import Layout from "@/app/components/ui/Layout";
+import { Envelope, Expense } from "@/app/utils/types";
+import { getAllEnvelopes } from "@/app/server/envelopes";
+import { useSession } from "next-auth/react";
 
 export default function EnvelopeDetails() {
   const router = useRouter();
@@ -16,11 +18,11 @@ export default function EnvelopeDetails() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [totalSpent, setTotalSpent] = useState(0);
   const [mostFrequentLocation, setMostFrequentLocation] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    if (!envelope) return;
-
-    const envelopes = getEnvelopes();
+  const fetchData = async () =>{
+        const envelopes = await getAllEnvelopes(session, status);
     if (!envelopes || envelopes.length === 0) {
       return;
     }
@@ -72,6 +74,12 @@ export default function EnvelopeDetails() {
 
       setMostFrequentLocation(frequentLocation);
     }
+  }
+
+  useEffect(() => {
+    if (!envelope) return;
+
+
   }, [envelope]);
 
   if (!envelopeData) {

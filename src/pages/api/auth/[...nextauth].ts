@@ -1,6 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, {
+  AuthOptions,
+  User as NextAuthUser,
+  Account,
+  Profile,
+  Session,
+  JWT,
+} from "next-auth";
+
+import type { CallbacksOptions } from "next-auth";
+import type { AdapterUser } from "next-auth/adapters";
+
 import CredentialsProvider from "next-auth/providers/credentials";
-import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/app/prisma";
 import bcryptjs from "bcryptjs";
@@ -15,20 +25,17 @@ declare module "next-auth" {
       username?: string | null;
     };
   }
+
   interface JWT {
     id?: string;
     username?: string | null;
+    email?: string | null;
   }
 }
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    // EmailProvider({
-    //   server: process.env.EMAIL_SERVER,
-    //   from: process.env.EMAIL_FROM,
-    //   maxAge: 24 * 60 * 60,
-    // }),
     CredentialsProvider({
       name: "Sign In",
       credentials: {
@@ -49,7 +56,7 @@ export const authOptions = {
         const password = String(credentials.password);
 
         try {
-          let user = null;
+          let user: Awaited<ReturnType<typeof prisma.user.findUnique>> | null = null;
 
           if (usernameOrEmail.includes('@')) {
             user = await prisma.user.findUnique({
@@ -76,11 +83,10 @@ export const authOptions = {
           console.log("User authenticated successfully:", user.email);
           return {
             id: user.id,
-            name: user.username,
+            name: user.username || user.email,
             email: user.email,
             username: user.username,
-            // image: user.image,
-          };
+          } as NextAuthUser;
         } catch (error) {
           console.error("Error during credentials authorization:", error);
           return null;
@@ -88,46 +94,61 @@ export const authOptions = {
       },
     }),
   ],
-   session: {
-    strategy: "jwt" // Top-level property
+  session: {
+    strategy: "jwt",
   },
-  cookies: { // Top-level property
+  callbacks: {
+    async jwt(params: Parameters<CallbacksOptions["jwt"]>[0]) {
+      const { token, user, account, profile, trigger, isNewUser, session } = params;
+
+      if (user) {
+        token.id = user.id;
+
+        if ('username' in user && user.username !== undefined) {
+             token.username = user.username;
+        } else if (user.name) {
+            token.username = user.name;
+        }
+        token.email = user.email;
+      }
+
+      if (trigger === "update" && session?.user?.username) {
+        token.username = session.user.username;
+      }
+
+      return token;
+    },
+    async session(params: Parameters<CallbacksOptions["session"]>[0]) {
+      const { session, token, user } = params;
+
+      if (token.id) {
+        session.user.id = token.id as string;
+      }
+      if (token.username) {
+        session.user.username = token.username as string;
+      }
+      if (token.email) {
+        session.user.email = token.email as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/auth/login",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
     sessionToken: {
       name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.startsWith('https://'),
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },
-  callbacks: { // Top-level property
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.email = user.email; // Ensure email is on token
-        token.username = (user as any).username;
-      }
-      console.log("CALLBACK: JWT Token after processing:", token);
-      return token;
-    },
-    async session({ session, token }) {
-      if (token.id) {
-        session.user.id = token.id as string;
-        session.user.username = token.username as string;
-        session.user.email = token.email as string; // Ensure email is on session
-      }
-      console.log("CALLBACK: Session object after processing:", session);
-      return session;
-    },
-  },
-  pages: { // Top-level property
-    signIn: "/auth/login",
-    // error: "/auth/error", // Uncomment if you want to use a custom error page
-  },
-  secret: process.env.NEXTAUTH_SECRET, // Top-level property
-  debug: process.env.NODE_ENV === "development", // Top-level property
+  debug: process.env.NODE_ENV === "development",
 };
 
 export default NextAuth(authOptions);

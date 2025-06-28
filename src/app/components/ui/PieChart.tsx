@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { totalSpend } from "@/app/utils/expenses";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
-import { Envelope } from "@/app/utils/localStorage";
+import { Envelope } from "@/app/utils/types";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

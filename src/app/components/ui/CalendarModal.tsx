@@ -1,20 +1,23 @@
 import React from "react";
 import { useRouter } from "next/navigation";
+import { Envelope, Expense, Income } from "@/app/utils/types";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   expenses: any[];
   incomes: any[];
+  envelopes: any[];
   selectedDate: string;
   view: "expenses" | "income" | "both";
 }
 
-export default function ExpenseModal({
+export default function CalendarModal({
   isOpen,
   onClose,
   expenses,
   incomes,
+  envelopes,
   selectedDate,
   view,
 }: ModalProps) {
@@ -28,6 +31,12 @@ export default function ExpenseModal({
     view === "expenses" || view === "both" ? expenses : [];
   const displayIncomes = view === "income" || view === "both" ? incomes : [];
   const hasData = displayExpenses.length > 0 || displayIncomes.length > 0;
+
+  const getEnvelopeTitle = (envelopeId: string): string => {
+    const envelope = envelopes.find((env) => env.id === envelopeId);
+    return envelope ? envelope.title : "Unknown Envelope";
+  };
+
 
   return (
     <div>
@@ -44,7 +53,7 @@ export default function ExpenseModal({
           <ul className="space-y-2">
             {displayExpenses.map((expense: any) => (
               <li key={expense.id} className="border-b pb-2">
-                <strong>{expense.envelope}:</strong> ${expense.amount} at{" "}
+                <strong>{getEnvelopeTitle(expense.envelopeId)}:</strong> ${expense.amount} at{" "}
                 {expense.location}
                 {expense.comments && (
                   <p className="text-sm text-gray-600">"{expense.comments}"</p>

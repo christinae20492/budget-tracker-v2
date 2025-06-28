@@ -1,23 +1,27 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  content: [
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  darkMode: 'selector',
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  darkMode: "selector",
   theme: {
     extend: {
       colors: {
         grey: {
+          50: "#f5f5f5",
+          150: "#cccccc",
+          700: "#0a0a0a",
           100: "#e9e9e9",
           200: "#a3a3a3",
           300: "#757575",
           400: "#141414",
           500: "#353535",
-          600: "#161616"
+          600: "#161616",
         },
 
         green: {
+          light: "#b2ddb0",
+          deep: "#2b4732",
+          vivid: "#6ACF6A",
           DEFAULT: "#86bd75",
           dark: "#1e2d3b",
           mint: "#caedd3",
@@ -26,6 +30,9 @@ export default {
         },
 
         red: {
+          soft: "#E8A1A1",
+          deep: "#4D1F1F",
+          crimson: "#B22222",
           DEFAULT: "#ad3d3d",
           light: "#DB6A6A",
           dark: "#21161c",
@@ -33,6 +40,9 @@ export default {
         },
 
         blue: {
+          pale: "#c5e5f1",
+          cobalt: "#0047AB",
+          dusk: "#355B6C",
           DEFAULT: "#52808D",
           light: "#9ED5E5",
           dark: "#243439",
@@ -40,17 +50,34 @@ export default {
         },
 
         notindigo: {
-          100:"#1C135D",
-          200:"#2B1D8A",
-          DEEAULT:"#3A27B7",
-          300:"#8170DC",
-          400:"#B2A5E9",
-          500:"#E4E0F7",
+          50: "#0F0A3C",
+          75: "#150F49",
+          250: "#3421A0",
+          100: "#1C135D",
+          200: "#2B1D8A",
+          DEEAULT: "#3A27B7",
+          300: "#8170DC",
+          400: "#B2A5E9",
+          500: "#E4E0F7",
         },
 
-        pink: "#CC8A94",
-        yellow: "#bdb775",
-        darkyellow: "#1c1c18",
+        pink: {
+          light: "#E3AAB3",
+          dark: "#914F5B",
+          blush: "#F7C1C8",
+        },
+
+        yellow: {
+          pale: "#e6e3b5",
+          gold: "#AFA72B",
+          bronze: "#8a8644",
+        },
+
+        darkyellow: {
+          olive: "#3a3a1e",
+          khaki: "#5f5f33",
+          soot: "#0a0a07",
+        },
       },
       fontFamily: {
         sans: [

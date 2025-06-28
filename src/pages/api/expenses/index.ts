@@ -32,7 +32,7 @@ export default async function handler(
     case "GET":
       console.log(`API: User ${userId} is requesting all expenses.`);
       try {
-        const getExpenses: Expense[] = await prisma.expense.findMany({
+        const getExpenses = await prisma.expense.findMany({
           where: {
             userId: userId,
           },
@@ -50,30 +50,47 @@ export default async function handler(
 
     case "POST":
       console.log(`API: User ${userId} is attempting to create an expense.`);
-      const { location, envelope, date, amount, comments } = req.body;
+      const { location, envelope, date, amount, comments, envelopeId } =
+        req.body;
 
       if (!location || !amount) {
         return res.status(400).json({ message: "Required fields missing" });
       }
 
+      const existingEnvelope = await prisma.envelope.findUnique({
+        where: { id: envelopeId, userId: userId },
+      });
+
+      if (!existingEnvelope) {
+        return res
+          .status(404)
+          .json({ error: "Envelope not found or does not belong to user." });
+      }
+
       try {
-        const newExpense: NewExpense = await prisma.expense.create({
+        const newExpense = await prisma.expense.create({
           data: {
-            id: Date.now(),
+            id: uuidv4(),
             location: location,
-            envelope: envelope,
             date: date,
             amount: amount,
             comments: comments,
-            userId: userId,
+            envelope: {
+              connect: {
+                id: envelopeId,
+              },
+            },
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
           },
         });
-        return res
-          .status(201)
-          .json({
-            message: "Expense created successfully!",
-            expense: newExpense,
-          });
+        return res.status(201).json({
+          message: "Expense created successfully!",
+          expense: newExpense,
+        });
       } catch (error) {
         console.error("API: Error creating expense:", error);
         return res.status(500).json({ message: "Failed to create expense." });

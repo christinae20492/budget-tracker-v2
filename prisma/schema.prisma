@@ -71,23 +71,28 @@ model User {
 }
 
 model Expense {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid()) @db.Uuid 
   location    String
-  envelope    String
   userId      String   @db.Uuid
-  date        String
+  date        String   
   amount      Float
   comments    String?
   dateCreated DateTime @default(now())
   dateUpdated DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id])
+
+  envelopeId  String   @db.Uuid 
+  envelope    Envelope @relation(fields: [envelopeId], references: [id], onDelete: Restrict)
+
+  @@index([envelopeId]) 
+  @@index([userId])   
 }
 
 model Income {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid()) @db.Uuid
   source      String
   amount      Float
-  date        String
+  date        String   
   userId      String   @db.Uuid
   savings     Float?
   investments Float?
@@ -95,14 +100,15 @@ model Income {
   dateCreated DateTime @default(now())
   dateUpdated DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model Envelope {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid()) @db.Uuid
   title       String
-  fixed       Boolean?
-  budget      Float?
-  expenses    Int[]
+  fixed       Boolean
+  budget      Float
   icon        String
   userId      String   @db.Uuid
   color       String
@@ -110,14 +116,20 @@ model Envelope {
   dateCreated DateTime @default(now())
   dateUpdated DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id])
+
+  expenses    Expense[]
+
+  @@index([userId])
 }
 
 model Note {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid()) @db.Uuid
   month       Int
   content     String
   userId      String   @db.Uuid
   dateCreated DateTime @default(now())
   dateUpdated DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
