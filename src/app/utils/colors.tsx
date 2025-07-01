@@ -98,4 +98,24 @@ export const envelopeColorsList = [
   "#81D4FA", // Light Sky
   "#AED581", // Pastel Green
   "#FF9800", // Amber
+  "#A3E4D7", // Pale Cyan
+  "#B9F2FF", // Baby Blue
+  "#D7BDE2", // Lavender Gray
+  "#FAD7A0", // Light Gold
+  "#A9CCE3", // Powder Blue
+  "#F2D7D5", // Pale Pink
+  "#D5DBDB", // Light Grayish Blue
+  "#FDEBD0", // Pale Peach
+  "#BBDAFF", // Sky Blue Light
+  "#E6B0AA", // Rose Dust
+  "#A2D9CE", // Mint Green
+  "#F5B041", // Bright Orange
+  "#EBDEF0", // Light Lavender
+  "#AED6F1", // Periwinkle
+  "#E8DAEF", // Light Violet
+  "#C39BD3", // Medium Purple
+  "#F0B27A", // Soft Orange
+  "#F8C471", // Mellow Yellow
+  "#9B59B6", // Amethyst Purple
+  "#3498DB", // Royal Blue
   ];

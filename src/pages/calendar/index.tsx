@@ -4,20 +4,13 @@ import Head from "next/head";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import {
-  getLocalExpenses,
-  Expense,
-  getLocalIncome,
-  Income,
-  getEnvelopes,
-  Envelope,
-} from "@/app/utils/localStorage";
 import ToggleSwitch from "@/app/components/ui/ToggleSwitch";
 import Layout from "@/app/components/ui/Layout";
 import { getAllData } from "@/app/server/data";
 import { useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
 import CalendarModal from "@/app/components/ui/CalendarModal";
+import { Envelope, Expense, Income } from "@/app/utils/types";
 
 export default function ExpenseCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,7 +35,6 @@ export default function ExpenseCalendar() {
   };
 
   const fetchData = async () => {
-    setLoading(true);
     const data = await getAllData(session, status);
     if (!data) return null;
     const allExp = data.expenses;
@@ -51,28 +43,13 @@ export default function ExpenseCalendar() {
     setExpenses(allExp);
     setIncomes(allInc);
     setEnvelopes(allEnv);
-    setLoading(false)
   };
 
   useEffect(() => {
+    setLoading(true)
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setExpenses(getLocalExpenses());
-      setIncomes(getLocalIncome());
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  useEffect(() => {
-    updateView();
-    window.addEventListener("resize", updateView);
-    return () => window.removeEventListener("resize", updateView);
-  }, []);
+    setLoading(false)
+  }, [session, status]);
 
   const handleDateClick = (info: any) => {
     const clickedDate = info.dateStr;
@@ -95,9 +72,11 @@ export default function ExpenseCalendar() {
     router.push(`calendar/${selectedDate}`);
   };
 
-  const getCategoryColor = (envelopeName: string, envelopes: Envelope[]) => {
+  const getCategoryColor = (envelopeId: string, envelopes: Envelope[]) => {
+    if (!envelopes || envelopes.length === 0) return;
+    console.log(envelopeId, envelopes)
     return (
-      envelopes.find((env) => env.title === envelopeName)?.color || "#DA5151"
+      envelopes.find((env) => env.id === envelopeId)?.color || "#DA5151"
     );
   };
 
@@ -106,7 +85,7 @@ export default function ExpenseCalendar() {
       id: String(expense.id),
       title: `${expense.location} - $${expense.amount}`,
       start: expense.date,
-      backgroundColor: getCategoryColor(expense.envelope, envelopes),
+      backgroundColor: getCategoryColor(expense.envelopeId, envelopes),
     }));
 
     const incomeEvents = incomes.map((income) => ({

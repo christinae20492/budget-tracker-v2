@@ -1,20 +1,17 @@
-"use client";
+import { getAllEnvelopes, getEnvelopeExpenses } from '@/app/server/envelopes';
+import { warnToast } from '@/app/utils/toast';
+import { Envelope, Expense } from '@/app/utils/types';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react'
+import LoadingScreen from './Loader';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
-import { getFormattedDate } from "@/app/utils/expenses";
-import { warnToast } from "@/app/utils/toast";
-import Layout from "@/app/components/ui/Layout";
-import { Envelope, Expense } from "@/app/utils/types";
-import { getAllEnvelopes, getEnvelopeExpenses } from "@/app/server/envelopes";
-import { useSession } from "next-auth/react";
-import { getAllExpenses } from "@/app/server/expenses";
-import LoadingScreen from "@/app/components/ui/Loader";
+interface FocusedEnvProps {
+  onClose: () => void;
+  envelope: string;
+}
 
-export default function EnvelopeDetails() {
-  const router = useRouter();
-  const { envId } = router.query;
+export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
 
   const [envelopeData, setEnvelopeData] = useState<Envelope | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -27,21 +24,21 @@ export default function EnvelopeDetails() {
 
   const fetchData = async () => {
     setLoading(true)
-    if (!envId || typeof envId !== "string" || status === "loading") return;
+    if (!envelope || typeof envelope !== "string" || status === "loading") return;
 
     const envelopes = await getAllEnvelopes(session, status);
     if (!envelopes || envelopes.length === 0) {
       return;
     }
 
-    const currentEnvelope = envelopes.find((env) => env.id === envId);
+    const currentEnvelope = envelopes.find((env) => env.id === envelope);
     if (!currentEnvelope) {
       setEnvelopeData(null);
       return;
     }
 
     setEnvelopeData(currentEnvelope);
-    const expenseList = await getEnvelopeExpenses(envId, session, status);
+    const expenseList = await getEnvelopeExpenses(envelope, session, status);
 
     if (!expenseList) return;
 
@@ -90,10 +87,10 @@ export default function EnvelopeDetails() {
   };
 
   useEffect(() => {
-    if (envId && typeof envId === "string" && status === "authenticated") {
+    if (envelope && typeof envelope === "string" && status === "authenticated") {
         fetchData();
     }
-  }, [envId, status]);
+  }, [envelope, status]);
 
   if (!envelopeData) {
     return (
@@ -104,18 +101,10 @@ export default function EnvelopeDetails() {
   if (loading) {
     return <LoadingScreen />;
   }
-
   return (
-    <Layout>
-      <Head>
-        <title>{envelopeData.title} - Details</title>
-        <meta
-          name="description"
-          content={`Details for ${envelopeData.title}`}
-        />
-      </Head>
-
-      <div className="mx-auto text-center">
+    <div className='modal-bg text-center'>
+    <div onClick={onClose} className='fixed inset-0 bg-black bg-opacity-50'>
+    <div className="modal-main w-1/2 h-5/6 my-5">
         <h1 className="header">{envelopeData.title} Details</h1>
         <h2 className="text-gray-600">
           Budget: <strong>${envelopeData.budget}</strong>
@@ -148,6 +137,7 @@ export default function EnvelopeDetails() {
           </p>
         )}
       </div>
-    </Layout>
-  );
+      </div>
+      </div>
+  )
 }

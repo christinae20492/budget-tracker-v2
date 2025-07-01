@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
 import PieChart from "@/app/components/ui/PieChart";
@@ -12,20 +12,23 @@ import {
 } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
 import Layout from "@/app/components/ui/Layout";
-import AddEnvelope from "@/app/components/ui/EnvelopeModal";
 import { faRectangleList } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
 import { Expense, Envelope } from "@/app/utils/types";
 import { getAllData } from "@/app/server/data";
+import FocusedEnv from "@/app/components/ui/FocusedEnv";
+import AddEnvelope from "@/app/components/ui/AddEnvelope";
 
 export default function EnvelopesPage() {
   const router = useRouter();
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
+  const [envId, setEnvId] = useState("");
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [isEnvelopeModalVisible, setEnvelopeModalVisible] = useState(false);
+  const [isAddEnvVisible, setAddEnvVisible] = useState(false);
   const [isDailySpendingModalVisible, setDailySpendingModalVisible] =
     useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,16 +43,17 @@ export default function EnvelopesPage() {
   );
 
   const fetchData = async () => {
-    setLoading(true)
-    const data = await getAllData(session, status)
+    setLoading(true);
+    const data = await getAllData(session, status);
+    if (!data) return;
     const allEnvelopes = data.envelopes;
     const allExpenses = data.expenses;
     if (!data) {
       setEnvelopes([]);
       setExpenses([]);
     } else if (data) {
-      setEnvelopes(allEnvelopes)
-      setExpenses(allExpenses)
+      setEnvelopes(allEnvelopes);
+      setExpenses(allExpenses);
     }
 
     const filteredEnvelopes = allEnvelopes.map((env) => ({
@@ -61,9 +65,8 @@ export default function EnvelopesPage() {
 
     const monthsExpenses = filterCurrentMonthExpenses(expenses);
     setFilteredExpenses(monthsExpenses);
-    setLoading(false)
+    setLoading(false);
   };
-
 
   useEffect(() => {
     const initializeData = async () => {
@@ -74,7 +77,10 @@ export default function EnvelopesPage() {
     initializeData();
   }, [status]);
 
-  
+  const handleCloseModal = async () => {
+    setAddEnvVisible(false);
+    await fetchData();
+  };
 
   const calculateTotalSpentToday = () => {
     const today = getFormattedDate();
@@ -88,8 +94,8 @@ export default function EnvelopesPage() {
   };
 
   const goToDetails = (env: Envelope) => {
-    const name = env.title;
-    router.push(`/envelopes/${name}`);
+    setEnvId(env.id);
+    setEnvelopeModalVisible(true);
   };
 
   const calculateRemainingBudget = (envelope: Envelope) => {
@@ -115,51 +121,43 @@ export default function EnvelopesPage() {
     }
   };
 
-const envelopeRender = (data: Envelope[], title: string) => {
-  if (data.length === 0) {
+  const envelopeRender = (data: Envelope[], title: string) => {
+    if (data.length === 0) {
+      return (
+        <div className="envelope-container">
+          <h3 className="envelope-container-title">{title}</h3>
+          <div className="text-center text-gray-500 mt-4 p-4 border border-dashed border-gray-300 rounded-md">
+            <p className="text-lg">
+              Nothing here yet. Try adding a new envelope!
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="envelope-container">
         <h3 className="envelope-container-title">{title}</h3>
-        <div className="text-center text-gray-500 mt-4 p-4 border border-dashed border-gray-300 rounded-md">
-          <p className="text-lg">Nothing here yet. Try adding a new envelope!</p>
-
+        <div className="envelope-grid">
+          {data.map((env) => (
+            <div key={env.id}>
+              <div
+                className={`envelope ${env.color ? "" : "bg-pink"}`}
+                style={env.color ? { backgroundColor: env.color } : {}}
+                onClick={() => goToDetails(env)}
+              >
+                <p className="envelope-title-text">{env.title}</p>
+                <p className="envelope-body-text">
+                  ${totalSpend(env).toFixed(2)} spent from $
+                  {env.budget.toFixed(2) || "N/A"}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
-  }
-
-  if (loading) {
-    return <LoadingScreen />
-  }
-
-  return (
-    <div className="envelope-container">
-      <h3 className="envelope-container-title">{title}</h3>
-      <div className="envelope-grid">
-        {data.map((env) => (
-          <div key={env.id}> 
-            <div
-              className={`envelope ${env.color ? "" : "bg-pink"}`}
-              style={env.color ? { backgroundColor: env.color } : {}}
-              onClick={() => goToDetails(env)}
-            >
-              <p className="envelope-title-text">{env.title}</p>
-              <p className="envelope-body-text">
-                ${totalSpend(env).toFixed(2)} spent from ${env.budget.toFixed(2) || 'N/A'}
-              </p>
-              {env.budget !== undefined && env.budget !== null && (
-                  <p className="envelope-body-text">
-                      Remaining: ${calculateRemainingBudget(env)?.toFixed(2) || 'N/A'}
-                  </p>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
+  };
 
   const getDailySpendingLastSevenDays = () => {
     const today = new Date();
@@ -192,8 +190,14 @@ const envelopeRender = (data: Envelope[], title: string) => {
         <title>Your Envelopes</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
+      {isAddEnvVisible && (
+        <AddEnvelope onClose={handleCloseModal} envelopes={envelopes} />
+      )}
       {isEnvelopeModalVisible && (
-        <AddEnvelope onClose={() => setEnvelopeModalVisible(false)} envelopes={envelopes} />
+        <FocusedEnv
+          onClose={() => setEnvelopeModalVisible(false)}
+          envelope={envId}
+        />
       )}
       {isDailySpendingModalVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -241,10 +245,7 @@ const envelopeRender = (data: Envelope[], title: string) => {
         <div className="text-center">
           <div>{envelopeRender(fixedEnvelopes, "Fixed")}</div>
           <div>{envelopeRender(variableEnvelopes, "Variable")}</div>
-          <button
-            className="button"
-            onClick={() => setEnvelopeModalVisible(true)}
-          >
+          <button className="button" onClick={() => setAddEnvVisible(true)}>
             Add Envelope
           </button>
         </div>

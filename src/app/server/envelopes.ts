@@ -99,7 +99,7 @@ export const createEnvelope = async (
     const result = await response.json();
 
     if (response.ok) {
-      successToast(result.message || "Envelope created successfully!");
+      //successToast(result.message || "Envelope created successfully!");
       return true;
     } else {
       failToast(result.message || "Failed to create envelope. Please try again.");

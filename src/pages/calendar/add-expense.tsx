@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { successToast, warnToast } from "@/app/utils/toast";
+import { failToast, successToast, warnToast } from "@/app/utils/toast";
 import Head from "next/head";
 import Layout from "@/app/components/ui/Layout";
 import { addExpenseToEnvelope, createExpense } from "@/app/server/expenses";
@@ -11,6 +11,8 @@ import { useSession } from "next-auth/react";
 import { getAllEnvelopes } from "@/app/server/envelopes";
 import { Envelope } from "@/app/utils/types";
 import LoadingScreen from "@/app/components/ui/Loader";
+import { faSquareCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function AddExpenses() {
   const searchParams = useSearchParams();
@@ -36,34 +38,44 @@ export default function AddExpenses() {
     if (!storedEnvelopes) return null;
     setEnvelopes(storedEnvelopes);
     if (storedEnvelopes.length > 0) {
-      setEnvelope(storedEnvelopes[0].title);
+      setEnvelope(storedEnvelopes[0].id);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [session, status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log("Starting post");
+
+    if (loading || status === "loading" || status === "unauthenticated") {
+      warnToast("Please wait for authentication/data to load.");
+      return;
+    }
+
+    console.log(status);
 
     if (!location || !envelope || !date || !amount) {
       warnToast("Please fill in all required fields.");
       return;
     }
 
+    console.log(envelope);
+
     setLoading(true);
 
-    const targetEnvelope = envelopes.find((e) => e.title === envelope);
-    if (!targetEnvelope) {
+    if (!envelopes || envelopes.length === 0) {
+      warnToast("Envelopes not loaded.");
       return;
     }
-    const envelopeId = targetEnvelope.id;
 
-    await createExpense(
+    const result = await createExpense(
       location,
-      envelopeId,
+      envelope,
       date,
       amount,
       comments,
@@ -73,7 +85,10 @@ export default function AddExpenses() {
 
     setLoading(false);
 
-    router.push("/calendar");
+    if (result) {
+      router.push("/calendar");
+      successToast(`Expense for ${date} added successfully`);
+    }
     successToast(`Expense for ${date} added successfully`);
   };
 
@@ -187,10 +202,11 @@ export default function AddExpenses() {
           <div className="text-center">
             <button
               type="submit"
-              className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-700 dark:bg-blue-400"
+              className="px-4 py-2 rounded-l-md bg-blue-500 text-white hover:bg-blue-700 dark:bg-blue-400"
             >
               Add Expense
             </button>
+            <span className="p-3 rounded-r-md bg-blue-950 text-white hover:bg-blue-800 dark:bg-blue-dark"><FontAwesomeIcon icon={faSquareCaretDown} /></span>
           </div>
         </form>
       </div>

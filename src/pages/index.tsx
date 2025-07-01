@@ -55,8 +55,9 @@ export default function Index() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
       const data = await getAllData(session, status);
-      if (!data) return null;
+      if (!data || status==='loading') return;
       const storedExpenses = data.expenses;
       const storedIncomes = data.incomes;
       const details = getMonthlyExpenditureDetails(
@@ -75,6 +76,7 @@ export default function Index() {
         highestAmount: details.highestSpendingAmount || 0,
         frequentLocation: details.highestSpendingLocation || "n/a",
       });
+      setLoading(false)
     };
 
     if (session) {
@@ -93,7 +95,7 @@ export default function Index() {
       } really got to you—you spent a total of $${spendingDetails.highestAmount.toFixed(
         2
       )} there this month.`;
-    } else if (!spendingDetails.frequentLocation && !summary.difference) {
+    } else if (!spendingDetails.frequentLocation && summary.difference === 0) {
       return `Why are you looking here? There's nothing to report. Get to budgeting already!`;
     }
   };

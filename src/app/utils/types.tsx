@@ -1,13 +1,13 @@
 export interface Expense {
   id: string;
   location: string;
-  envelope: string;
+  envelopeId: string;
   userId: string;
   date: string;
   amount: number;
-  comments?: string;
-  dateCreated: string;
-  dateUpdated: string;
+  comments: string | null;
+  dateCreated: Date;
+  dateUpdated: Date;
 }
 
 export interface Income {
@@ -16,11 +16,11 @@ export interface Income {
   amount: number;
   date: string;
   userId: string;
-  savings?: number;
-  investments?: number;
-  remainder?: number;
-  dateCreated: string;
-  dateUpdated: string;
+  savings: number | null;
+  investments: number | null;
+  remainder: number | null;
+  dateCreated: Date;
+  dateUpdated: Date;
 }
 
 export interface Envelope {
@@ -28,13 +28,13 @@ export interface Envelope {
   title: string;
   fixed: boolean;
   budget: number;
-  expenses: Expense[];
+  expenses?: Expense[];
   icon: string;
   userId: string;
   color: string;
-  comments?: string;
-  dateCreated: string;
-  dateUpdated: string;
+  comments: string | null;
+  dateCreated: Date;
+  dateUpdated: Date;
 }
 
 export interface Note {
@@ -42,49 +42,49 @@ export interface Note {
   month: number;
   content: string;
   userId: string;
-  dateCreated: string;
-  dateUpdated: string;
+  dateCreated: Date;
+  dateUpdated: Date;
 }
 
 export interface EditExpense {
-  location?: string;
-  envelope?: string;
-  date?: string;
-  amount?: number;
-  comments?: string;
+  location: string | null;
+  envelopeId: string | null;
+  date: string | null;
+  amount: number | null;
+  comments: string | null;
 }
 
 export interface EditIncome {
-  source?: string;
-  amount?: number;
-  date?: string;
-  savings?: number;
-  investments?: number;
-  remainder?: number;
+  source: string | null;
+  amount: number | null;
+  date: string | null;
+  savings: number | null;
+  investments: number | null;
+  remainder: number | null;
 }
 
 export interface EditEnvelope {
-  title?: string;
-  fixed?: boolean;
-  budget?: number;
-  icon?: string;
-  color?: string;
-  addExpense?: number;
-  removeExpense?: number;
-  comments?: string;
+  title: string | null;
+  fixed: boolean | null;
+  budget: number | null;
+  icon: string | null;
+  color: string | null;
+  addExpense: number | null;
+  removeExpense: number | null;
+  comments: string | null;
 }
 
 export interface EditNote {
-  content?: string;
+  content: string | null;
 }
 
 export interface NewExpense {
   id: number;
   location: string;
-  envelope: string;
+  envelopeId: string;
   date: string;
   amount: number;
-  comments?: string;
+  comments: string | null;
 }
 
 export interface NewIncome {
@@ -92,9 +92,9 @@ export interface NewIncome {
   source: string;
   amount: number;
   date: string;
-  savings?: number;
-  investments?: number;
-  remainder?: number;
+  savings: number | null;
+  investments: number | null;
+  remainder: number | null;
 }
 
 export interface NewEnvelope {
@@ -104,7 +104,7 @@ export interface NewEnvelope {
   expenses: number[];
   icon: string;
   color: string;
-  comments?: string;
+  comments: string | null;
 }
 
 export interface NewNote {

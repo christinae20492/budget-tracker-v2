@@ -28,6 +28,7 @@ export default async function handler(
     return res.status(400).json({ message: "User ID missing from session." });
   }
 
+  try {
   switch (req.method) {
     case "GET":
       console.log(`API: User ${userId} is requesting all expenses.`);
@@ -57,6 +58,12 @@ export default async function handler(
         return res.status(400).json({ message: "Required fields missing" });
       }
 
+      const parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            console.warn(`API: Invalid amount received: ${amount}`);
+            return res.status(400).json({ message: "Amount must be a positive number." });
+        }
+
       const existingEnvelope = await prisma.envelope.findUnique({
         where: { id: envelopeId, userId: userId },
       });
@@ -73,7 +80,7 @@ export default async function handler(
             id: uuidv4(),
             location: location,
             date: date,
-            amount: amount,
+            amount: parsedAmount,
             comments: comments,
             envelope: {
               connect: {
@@ -87,6 +94,7 @@ export default async function handler(
             },
           },
         });
+        console.log(`Creating..., ${newExpense}`)
         return res.status(201).json({
           message: "Expense created successfully!",
           expense: newExpense,
@@ -101,5 +109,9 @@ export default async function handler(
       return res
         .status(405)
         .json({ message: `Method ${req.method} Not Allowed` });
+  }
+  } catch (error: any) {
+    console.error("API: Unhandled error in handler:", error);
+    return res.status(500).json({ message: "An unexpected server error occurred." });
   }
 }

@@ -69,8 +69,10 @@ export const createExpense = async (
     envelopeId,
     date,
     comments,
-    amount: parseFloat(amount),
+    amount,
   };
+
+  console.log(expData)
 
   try {
     const response = await fetch("/api/expenses", {

@@ -1,13 +1,7 @@
 "use client";
 
-import Auth from "@/app/components/ui/Auth";
-import {
-  Expense,
-  getLocalExpenses,
-  getLocalIncome,
-  Income,
-} from "@/app/utils/localStorage";
 import { successToast } from "@/app/utils/toast";
+import { Expense, Income } from "@/app/utils/types";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
@@ -37,7 +31,7 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
       setDate(expense.date);
       setAmount(expense.amount);
       setComments(expense.comments);
-      setEnvelope(expense.envelope);
+      setEnvelope(expense.envelopeId);
     } else if (income && !expense) {
         setSource(income.source);
         setDate(income.date);
@@ -51,7 +45,7 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (currentItemType === "expense" && expense) {
+    /*if (currentItemType === "expense" && expense) {
       const updatedExpense: Expense = {
         id: expense.id,
         location,
@@ -87,14 +81,14 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
   }
         successToast(`Your ${currentItemType} was updated successfully!`);
       router.push(`/edit`)
-  }
+  }*/
 }
 
 
 
     return (
       <>
-        {currentItemType === "expense" ? (
+        {expense && currentItemType === "expense" ? (
           <div>
             <h1 className="header">Expenditure from {expense.date}</h1>
             <form onSubmit={(e) => handleSubmit(e)} className="space-y-4">
