@@ -34,7 +34,7 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch("/api/user/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,7 +63,7 @@ const RegisterPage: React.FC = () => {
             Create Your Account
           </h2>
           <p className="text-center text-sm text-gray-600">
-            Join us to start managing your notes!
+            Join us to start managing your money!
           </p>
         </div>
         <form className="space-y-6" onSubmit={handleRegister}>

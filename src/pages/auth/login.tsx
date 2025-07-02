@@ -60,7 +60,7 @@ const SignInPage: React.FC = () => {
             Welcome Back!
           </h2>
           <p className="text-center text-sm text-gray-600">
-            Sign in to access your notes.
+            Sign in to access your expenses.
           </p>
         </div>
         <form className="space-y-6" onSubmit={handleSubmit}>
