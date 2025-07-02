@@ -64,7 +64,7 @@ export default async function handler(
         if (removeExpense !== undefined && typeof removeExpense === "string") {
           const initialLength = updatedExpenses.length;
           updatedExpenses = updatedExpenses.filter(
-            (id) => id !== removeExpense
+            (id: any) => id !== removeExpense
           );
           if (updatedExpenses.length === initialLength) {
             console.log(
