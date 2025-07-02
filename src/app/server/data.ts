@@ -1,6 +1,6 @@
-import { Envelope, Expense, Income } from "@/generated/prisma";
+
 import { warnToast, failToast, successToast } from "../utils/toast";
-import { Note } from "../utils/types";
+import { Envelope, Expense, Income, Note } from "../utils/types";
 
 interface Data {
     expenses: Expense[],
