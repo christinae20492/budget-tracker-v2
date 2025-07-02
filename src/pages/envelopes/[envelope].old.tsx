@@ -41,7 +41,7 @@ export default function EnvelopeDetails() {
     }
 
     setEnvelopeData(currentEnvelope);
-    const expenseList = await getEnvelopeExpenses(envId, session, status);
+    const expenseList = await getEnvelopeExpenses(envId, session, status, false);
 
     if (!expenseList) return;
 

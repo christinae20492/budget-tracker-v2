@@ -6,10 +6,11 @@ const Slider = dynamic(() => import("rc-slider"), { ssr: false });
 import "rc-slider/assets/index.css";
 
 import { successToast } from "@/app/utils/toast";
-import { Expense } from "@/app/utils/types";
+import { EditEnvelope, Expense } from "@/app/utils/types";
 import { getEnvelopeExpenses, updateEnvelope } from "@/app/server/envelopes";
 import { useSession } from "next-auth/react";
 import LoadingScreen from "./Loader";
+import { deleteExpense } from "@/app/server/expenses";
 
 interface ItemViewProps {
   envelopeItem: any;
@@ -36,9 +37,12 @@ const ItemView: React.FC<ItemViewProps> = ({
       const fullExpenses = await getEnvelopeExpenses(
         envelopeItem.id,
         session,
-        status
+        status,
+        false
       );
-      setExpenses(fullExpenses);
+      if (fullExpenses) {
+        setExpenses(fullExpenses);
+      }
     } else if (expenseItem && !envelopeItem && !incomeItem) {
       setCurrentItemType("expense");
     } else if (incomeItem && !envelopeItem && !expenseItem) {
@@ -63,19 +67,26 @@ const ItemView: React.FC<ItemViewProps> = ({
     };
   }, []);
 
-  const handleBudgetChange = (value: number) => {
-    setBudgetValue(value);
+  const handleBudgetChange = (value: number | number[]) => {
+    const numValue = value as number;
+    setBudgetValue(numValue);
 
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
+    const envData: EditEnvelope = {
+      title: null,
+      fixed: null,
+      budget: budgetValue,
+      icon: null,
+      color: null,
+      addExpense: null,
+      removeExpense: null,
+      comments: null,
+    };
+
     saveTimeoutRef.current = setTimeout(async () => {
       if (envelopeItem) {
-        await updateEnvelope(
-          envelopeItem.id,
-          { budget: value },
-          session,
-          status
-        );
+        await updateEnvelope(envelopeItem.id, envData, session, status);
 
         successToast(`${envelopeItem.title}'s was budget updated to $${value}`);
       }
@@ -86,8 +97,19 @@ const ItemView: React.FC<ItemViewProps> = ({
     return <LoadingScreen />;
   }
 
-  function handleDeleteExp(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
-    throw new Error("Function not implemented.");
+  const handleDeleteExp = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this expense?"
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    await deleteExpense(expenseItem.id, session, status);
+    setLoading(false);
+  };
+
+  if (loading) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -129,12 +151,6 @@ const ItemView: React.FC<ItemViewProps> = ({
                   <li key={expense.id} className="exp-inc-item">
                     {expense.location} - ${expense.amount}
                   </li>
-                  <button
-                    className="exp-inc-btn"
-                    onClick={handleDeleteExp}
-                  >
-                    Delete
-                  </button>
                 </span>
               ))}
             </ul>

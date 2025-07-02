@@ -37,7 +37,7 @@ export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
     }
 
     setEnvelopeData(currentEnvelope);
-    const expenseList = await getEnvelopeExpenses(envelope, session, status);
+    const expenseList = await getEnvelopeExpenses(envelope, session, status, false);
 
     if (!expenseList) return;
 

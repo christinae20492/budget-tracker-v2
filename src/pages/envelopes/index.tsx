@@ -20,6 +20,7 @@ import { Expense, Envelope } from "@/app/utils/types";
 import { getAllData } from "@/app/server/data";
 import FocusedEnv from "@/app/components/ui/FocusedEnv";
 import AddEnvelope from "@/app/components/ui/AddEnvelope";
+import { getEnvelopeExpenses } from "@/app/server/envelopes";
 
 export default function EnvelopesPage() {
   const router = useRouter();
@@ -56,14 +57,25 @@ export default function EnvelopesPage() {
       setExpenses(allExpenses);
     }
 
-    const filteredEnvelopes = allEnvelopes.map((env) => ({
-      ...env,
-      expenses: filterCurrentMonthExpenses(env.expenses || []),
-    }));
+    const envelopesWithExpensesPromises = allEnvelopes.map(async (env) => {
+      const rawExp = await getEnvelopeExpenses(env.id, session, status, false);
 
-    setEnvelopes(filteredEnvelopes);
+      const currentMonthExpenses = rawExp
+        ? filterCurrentMonthExpenses(rawExp)
+        : [];
+
+      return {
+        ...env,
+        expenses: currentMonthExpenses,
+      };
+    });
+
+    const finalFilteredEnvelopes = await Promise.all(
+      envelopesWithExpensesPromises
+    );
 
     const monthsExpenses = filterCurrentMonthExpenses(expenses);
+    setEnvelopes(finalFilteredEnvelopes);
     setFilteredExpenses(monthsExpenses);
     setLoading(false);
   };
@@ -71,7 +83,7 @@ export default function EnvelopesPage() {
   useEffect(() => {
     const initializeData = async () => {
       await fetchData();
-      envelopes.forEach((envelope) => calculateRemainingBudget(envelope));
+      //envelopes.forEach((envelope) => calculateRemainingBudget(envelope));
     };
 
     initializeData();
