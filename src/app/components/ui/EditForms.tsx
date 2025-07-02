@@ -1,7 +1,10 @@
 "use client";
 
+import { updateExpense } from "@/app/server/expenses";
+import { updateIncome } from "@/app/server/incomes";
 import { successToast } from "@/app/utils/toast";
-import { Expense, Income } from "@/app/utils/types";
+import { EditExpense, EditIncome, Expense, Income } from "@/app/utils/types";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
@@ -13,17 +16,20 @@ interface EditFormProps {
 
 export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, income }) => {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
   const [location, setLocation] = useState("");
   const [envelope, setEnvelope] = useState("");
   const [date, setDate] = useState("");
   const [amount, setAmount] = useState(0);
-  const [comments, setComments] = useState("");
+  const [comments, setComments] = useState<string | null>(null);
 
   const [source, setSource] = useState("");
-  const [savings, setSavings] = useState(0);
-  const [investments, setInvestments] = useState(0);
-  const [remainder, setRemainder] = useState(0);
+  const [savings, setSavings] = useState<number | null>(null);
+  const [investments, setInvestments] = useState<number | null>(null);
+  const [remainder, setRemainder] = useState<number | null>(null);
+
 
   useEffect(() => {
     if (expense && !income) {
@@ -42,28 +48,24 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
     }
   }, [expense, income]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true)
 
-    /*if (currentItemType === "expense" && expense) {
-      const updatedExpense: Expense = {
-        id: expense.id,
+    if (currentItemType === "expense" && expense) {
+      const updatedExpense: EditExpense = {
         location,
-        envelope,
         date,
+        envelopeId: envelope,
         amount,
         comments,
       };
 
-      const existingExpenses = getLocalExpenses();
-      const expenseIndex = existingExpenses.findIndex(exp => exp.id === updatedExpense.id);
-
-      if (expenseIndex !== -1) {
-        existingExpenses[expenseIndex] = updatedExpense;
-        localStorage.setItem("expenses", JSON.stringify(existingExpenses));
+      await updateExpense(expense.id, updatedExpense, session, status);
+      setLoading(false);
+      router.push("/edit")
     } else if (income) {
-      const updatedIncome: Income = {
-        id: income.id,
+      const updatedIncome: EditIncome = {
         source,
         amount,
         date,
@@ -71,18 +73,14 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
         investments,
         remainder,
       };
-      const existingIncomes = getLocalIncome();
-      const incomeIndex = existingIncomes.findIndex(inc => inc.id === updatedIncome.id);
-
-      if (incomeIndex !== -1) {
-        existingIncomes[incomeIndex] = updatedIncome;
-        localStorage.setItem("incomes", JSON.stringify(existingIncomes));
-    }
+      await updateIncome(income.id, updatedIncome, session, status);
+      setLoading(false);
+      router.push("/edit")
   }
         successToast(`Your ${currentItemType} was updated successfully!`);
       router.push(`/edit`)
-  }*/
-}
+  }
+
 
 
 
@@ -137,7 +135,7 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
                   type="number"
                   id="amount"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => setAmount(Number(e.target.value))}
                   required
                   min="0"
                   step="0.01"
@@ -154,7 +152,7 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
                 </label>
                 <textarea
                   id="comments"
-                  value={comments}
+                  value={comments ?? ""}
                   onChange={(e) => setComments(e.target.value)}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-slate-900 dark:text-white"
                   rows={3}
@@ -171,7 +169,7 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
               </div>
             </form>
           </div>
-        ) : (
+        ) : currentItemType === "income" && income ? (
           <div>
             <h1 className="header">Income on {income.date}</h1>
 
@@ -210,7 +208,7 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
                 <label>Savings</label>
                 <input
                   type="number"
-                  value={savings}
+                  value={savings ?? 0}
                   onChange={(e) => setSavings(Number(e.target.value))}
                   className="block w-full p-2 dark:bg-slate-900 dark:text-white border border-gray-300"
                 />
@@ -219,7 +217,7 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
                 <label>Investments</label>
                 <input
                   type="number"
-                  value={investments}
+                  value={investments ?? 0}
                   onChange={(e) => setInvestments(Number(e.target.value))}
                   className="block w-full p-2 dark:bg-slate-900 dark:text-white border border-gray-300"
                 />
@@ -239,7 +237,9 @@ export const EditForm: React.FC<EditFormProps> = ({ currentItemType, expense, in
               </div>
             </form>
           </div>
-        )}
+        ): (
+      <div className="text-center text-gray-500 mt-4">No item selected for editing or invalid type.</div>
+    )}
       </>
     );
   };

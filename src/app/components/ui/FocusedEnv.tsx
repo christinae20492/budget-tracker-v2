@@ -19,11 +19,10 @@ export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
   const [mostFrequentLocation, setMostFrequentLocation] = useState<
     string | null
   >(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { data: session, status } = useSession();
 
   const fetchData = async () => {
-    setLoading(true)
     if (!envelope || typeof envelope !== "string" || status === "loading") return;
 
     const envelopes = await getAllEnvelopes(session, status);
@@ -43,15 +42,15 @@ export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
     if (!expenseList) return;
 
     // Filter expenses for the current month
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
+     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
+    const currentMonthPadded = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const currentYearMonthString = `${currentYear}-${currentMonthPadded}`;
+
     const filteredExpenses = expenseList.filter((expense) => {
-      const expenseDate = new Date(expense.date);
-      return (
-        expenseDate.getMonth() === currentMonth &&
-        expenseDate.getFullYear() === currentYear
-      );
+      const expenseYearMonthString = expense.date.substring(0, 7); 
+      
+      return expenseYearMonthString === currentYearMonthString;
     });
 
     setExpenses(filteredExpenses);

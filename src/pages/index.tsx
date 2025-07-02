@@ -1,11 +1,4 @@
 import { getMonthlyExpenditureDetails } from "@/app/utils/expenses";
-import {
-  Expense,
-  Income,
-  getLocalExpenses,
-  getLocalIncome,
-  getEnvelopes,
-} from "@/app/utils/localStorage";
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import SummaryDoughnutChart from "@/app/components/ui/DonutChart";
@@ -15,6 +8,7 @@ import router from "next/router";
 import { signIn, useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
 import { getAllData } from "@/app/server/data";
+import { Expense, Income } from "@/app/utils/types";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);

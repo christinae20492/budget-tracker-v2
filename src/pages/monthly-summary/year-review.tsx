@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import Layout from "@/app/components/ui/Layout";
 import { getYearlyExpenditureDetails } from "@/app/utils/expenses";
-import { getLocalExpenses, getLocalIncome } from "@/app/utils/localStorage";
 
 import {
   Chart as ChartJS,
@@ -18,6 +17,10 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { useSession } from "next-auth/react";
+import { getAllExpenses } from "@/app/server/expenses";
+import { getAllIncomes } from "@/app/server/incomes";
+import LoadingScreen from "@/app/components/ui/Loader";
 
 ChartJS.register(
   CategoryScale,
@@ -29,26 +32,39 @@ ChartJS.register(
   Legend
 );
 
+interface YearSummaryDetails {
+  incomeTotals: number,
+    expenseTotals: number,
+    spendingDifference: number,
+    highestEnvelope: string,
+    highestAmount: number,
+    frequentEnvelope: string,
+    monthlyExpenses: any,
+    monthlyIncome: any
+}
+
 export default function YearlySummary() {
-  const [summary, setSummary] = useState<ReturnType<
-    typeof getYearlyExpenditureDetails
-  > | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [summary, setSummary] = useState<YearSummaryDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { data: session, status } = useSession();
   const [year, setYear] = useState(new Date().getFullYear());
 
-  const expenses = getLocalExpenses();
-  const incomes = getLocalIncome();
+  const fetchData = async () => {
+    setIsLoading(true);
+    const allExp = await getAllExpenses(session, status);
+    const allInc = await getAllIncomes(session, status);
+    if (!allExp || !allInc) return;
+    const details = getYearlyExpenditureDetails(allInc, allExp, year);
+    setSummary(details);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    if (expenses.length && incomes.length) {
-      const details = getYearlyExpenditureDetails(incomes, expenses, year);
-      setSummary(details);
-      setIsLoading(false);
-    }
-  }, [year]);
+    fetchData();
+  }, [year, status]);
 
-  if (!summary) {
-    return <div>Loading Yearly Summary...</div>;
+  if (!summary || isLoading) {
+    return <LoadingScreen />;
   }
 
   const data = {
@@ -76,7 +92,7 @@ export default function YearlySummary() {
       {
         label: "Total Spending",
         data: summary.monthlyExpenses,
-        borderColor: "#962C2C",
+        borderColor: "#731718",
         backgroundColor: "#CC3838",
       },
     ],
@@ -101,7 +117,9 @@ export default function YearlySummary() {
         <title>Your Year In Review</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <h1 className="text-center xl:text-2xl md:text-3xl md:p-2 font-bold">Yearly Summary</h1>
+      <h1 className="text-center xl:text-2xl md:text-3xl md:p-2 font-bold">
+        Yearly Summary
+      </h1>
 
       <div className="text-center my-5">
         <h3 className="text-gray-400 xl:text-xl md:text-2xl">
@@ -123,15 +141,14 @@ export default function YearlySummary() {
         <p className="my-2">
           Net Savings: ${summary.spendingDifference.toFixed(2)}
         </p>
-      
 
-      <p className="my-2">
-        Category with Highest Spending: {summary.highestEnvelope} - $
-        {summary.highestAmount}
-      </p>
-      <p className="my-2">
-        Most Frequent Purchases Category: {summary.frequentEnvelope}
-      </p>
+        <p className="my-2">
+          Category with Highest Spending: {summary.highestEnvelope} - $
+          {summary.highestAmount}
+        </p>
+        <p className="my-2">
+          Most Frequent Purchases Category: {summary.frequentEnvelope}
+        </p>
       </div>
 
       <div className="mt-10">

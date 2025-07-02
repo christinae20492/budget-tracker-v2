@@ -25,41 +25,41 @@ export default function ManageExpenses() {
 
   const router = useRouter();
 
-  const fetchData = async() =>{
-        setLoading(true);
+  const fetchData = async () => {
+    setLoading(true);
 
-    const data = await getAllData(session, status)
+    const data = await getAllData(session, status);
     const allExp = data?.expenses;
     const allEnv = data?.envelopes;
     const allInc = data?.incomes;
+    if (!allExp || !allInc || !allEnv) return;
     setExpenses(allExp);
     setIncomes(allInc);
     setEnvelopes(allEnv);
-        setLoading(false);
+    setLoading(false);
+  };
 
-  }
-
-  useEffect(()=>{
+  useEffect(() => {
     fetchData();
-  },[status])
+  }, [status]);
 
   const updateExpenses = (updatedExpenses: Expense[]) => {
     localStorage.setItem("expenses", JSON.stringify(updatedExpenses));
   };
 
-  const handleItemClick = (item: any) =>{
+  const handleItemClick = (item: any) => {
     const params = item.id;
-    router.push(`edit/${params}`)
-  }
+    router.push(`edit/${params}`);
+  };
 
-  const handleEnvClick = (env: any) =>{
+  const handleEnvClick = (env: any) => {
     const params = env.id;
-    router.push(`edit/${params}`)
-  }
+    router.push(`edit/${params}`);
+  };
 
-if (loading) {
-  return <LoadingScreen />
-}
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <Layout>
@@ -68,7 +68,6 @@ if (loading) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <h1 className="header">Manage Expenses, Incomes, and Envelopes</h1>
-      <DataManagement />
       <div className="grid md:max-h-none xl:grid-cols-3 md:grid-cols-2 md:items-center grid-cols-1 overflow-y-auto max-h-fit gap-4 mt-6">
         {/* Expenses */}
         <div>

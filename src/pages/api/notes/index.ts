@@ -61,7 +61,6 @@ export default async function handler(
       try {
         const newNote = await prisma.note.create({
           data: {
-            id: Date.now(),
             month: month,
             content: content,
             userId: userId,

@@ -1,12 +1,14 @@
 import Layout from "@/app/components/ui/Layout";
-import { getLocalNotes, Note, deleteNote } from "@/app/utils/localStorage";
+import { deleteNote, getAllNotes } from "@/app/server/notes";
 import { successToast } from "@/app/utils/toast";
+import { Note } from "@/app/utils/types";
 import {
   faPenNib,
   faTrash,
   faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { Router, useRouter } from "next/router";
@@ -17,14 +19,19 @@ export default function Notes() {
   const date = new Date();
   const [currentMonth, setCurrentMonth] = useState(date.getMonth());
   const [notes, setNotes] = useState<Note[]>([]);
-  const [hoveredNoteId, setHoveredNoteId] = useState(0);
+  const [hoveredNoteId, setHoveredNoteId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
-  const fetchData = () => {
-    const rawNotes = getLocalNotes();
+  const fetchData = async () => {
+    setLoading(true)
+    const rawNotes = await getAllNotes(session, status);
+    if (!rawNotes) return;
     const filteredNotes = rawNotes.filter(
       (note) => note.month === currentMonth
     );
     setNotes(filteredNotes);
+    setLoading(false)
   };
 
   const increment = () => {
@@ -49,7 +56,7 @@ export default function Notes() {
 
   useEffect(() => {
     fetchData();
-  }, [currentMonth]);
+  }, [currentMonth, status]);
 
   function getMonthName(monthNumber: number): string {
     switch (monthNumber) {
@@ -82,11 +89,13 @@ export default function Notes() {
     }
   }
 
-  function handleDelete(id: number) {
+  const handleDelete = async(id: string)=>{
     if (!id) return null;
-    deleteNote(id);
+    setLoading(true)
+    await deleteNote(id, session, status);
     successToast("Note deleted successfully.");
     fetchData();
+    setLoading(false)
   }
 
   return (
@@ -116,7 +125,7 @@ export default function Notes() {
                   key={note.id}
                   className="border border-notindigo-400 rounded-xl my-4 max-w-4xl mx-auto p-4 shadow text-lg list-disc transition-all relative hover:border-none hover:bg-notindigo-500 hover:text-xl hover:shadow-lg dark:text-black"
                   onMouseEnter={() => setHoveredNoteId(note.id)}
-                  onMouseLeave={() => setHoveredNoteId(0)}
+                  onMouseLeave={() => setHoveredNoteId("")}
                 >
                   <div>{note.content}</div>
                   {hoveredNoteId === note.id && (

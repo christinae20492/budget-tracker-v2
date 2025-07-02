@@ -92,6 +92,7 @@ export default function EnvelopeDetails() {
   useEffect(() => {
     if (envId && typeof envId === "string" && status === "authenticated") {
         fetchData();
+        console.log(expenses)
     }
   }, [envId, status]);
 

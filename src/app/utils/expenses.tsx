@@ -124,8 +124,8 @@ export function getMonthlyExpenditureDetails(
 
   const mostSpentEnvelope = thisMonthExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
-      if (expense.envelope) {
-        acc[expense.envelope] = (acc[expense.envelope] || 0) + expense.amount;
+      if (expense.envelopeId) {
+        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + expense.amount;
       }
       return acc;
     },
@@ -137,8 +137,8 @@ export function getMonthlyExpenditureDetails(
 
   const mostFrequentEnvelope = thisMonthExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
-      if (expense.envelope) {
-        acc[expense.envelope] = (acc[expense.envelope] || 0) + 1;
+      if (expense.envelopeId) {
+        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + 1;
       }
       return acc;
     },
@@ -222,8 +222,8 @@ export function getYearlyExpenditureDetails(
 
   const mostSpentEnvelope = yearlyExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
-      if (expense.envelope) {
-        acc[expense.envelope] = (acc[expense.envelope] || 0) + expense.amount;
+      if (expense.envelopeId) {
+        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + expense.amount;
       }
       return acc;
     },
@@ -234,8 +234,8 @@ export function getYearlyExpenditureDetails(
 
   const mostFrequentEnvelope = yearlyExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
-      if (expense.envelope) {
-        acc[expense.envelope] = (acc[expense.envelope] || 0) + 1;
+      if (expense.envelopeId) {
+        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + 1;
       }
       return acc;
     },
@@ -286,7 +286,8 @@ export function filterEnvelopeExpenses(
       return true;
     })
     .map((envelope) => {
-      const filteredExpenses = envelope.expenses.filter((expense) => {
+      const expensesToFilter = envelope.expenses || [];
+      const filteredExpenses = expensesToFilter.filter((expense) => {
         const expenseDate = new Date(expense.date);
         const matchesMonth = criteria.month
           ? expenseDate.getMonth() + 1 === criteria.month

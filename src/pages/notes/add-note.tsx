@@ -1,38 +1,38 @@
-"use client"
-import { useState } from "react"
-import { Note, addLocalNote } from "@/app/utils/localStorage"
-=import { failToast, successToast } from "@/app/utils/toast";
+"use client";
+import { useState } from "react";
+import { failToast, successToast } from "@/app/utils/toast";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Layout from "@/app/components/ui/Layout";
+import { Note } from "@/app/utils/types";
+import { useSession } from "next-auth/react";
+import { createNote } from "@/app/server/notes";
+import LoadingScreen from "@/app/components/ui/Loader";
 
 export default function CreateNote() {
   const router = useRouter();
-    const date = new Date();
-    const currentMonth = date.getMonth();
-    const [body, setBody] = useState("");
+  const date = new Date();
+  const currentMonth = date.getMonth();
+  const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
-    const handleSubmit = (e: React.FormEvent) =>{
-        e.preventDefault();
-        if (!body) {
-            failToast("The note is empty.")
-        }
-
-        const idgen=()=>{
-                     const randomNumber = Math.floor(10000 + Math.random() * 90000);
-            return randomNumber;
-          }
-
-        const newNote: Note = {
-            id: idgen(),
-            month: currentMonth,
-            content: body
-        }
-
-        addLocalNote(newNote);
-        successToast('New note created!')
-        router.push('/notes');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!body) {
+      failToast("The note is empty.");
     }
+
+    setLoading(true);
+
+    await createNote(currentMonth, body, session, status);
+    setLoading(false);
+    router.push("/notes");
+  };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <Layout>
@@ -40,10 +40,10 @@ export default function CreateNote() {
         <title>Add Note</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-        <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
-            <h2 className="header">Create a Note</h2>
-            <form onSubmit={handleSubmit}>
-            <div>
+      <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
+        <h2 className="header">Create a Note</h2>
+        <form onSubmit={handleSubmit}>
+          <div>
             <label
               htmlFor="body"
               className="block text-sm font-medium text-gray-700 dark:text-white"
@@ -66,8 +66,8 @@ export default function CreateNote() {
               Add Note
             </button>
           </div>
-            </form>
-        </div>
+        </form>
+      </div>
     </Layout>
-  )
+  );
 }

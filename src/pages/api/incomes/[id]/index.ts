@@ -22,10 +22,7 @@ export default async function handler(
     return res.status(400).json({ error: 'Income ID is required and must be a string.' });
   }
 
-  const incomeId = parseInt(id, 10);
-  if (isNaN(incomeId)) {
-    return res.status(400).json({ error: 'Invalid income ID provided. Must be a number.' });
-  }
+  const incomeId = Array.isArray(id) ? id[0] : id;
 
     const userId = session.user.id;
   if (!userId) {
@@ -67,12 +64,15 @@ export default async function handler(
         return res.status(404).json({ error: 'Income not found.' });
       }
 
+      const filteredData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, value]) => value !== null)
+      );
 
       const updatedincome = await prisma.income.update({
         where: { id: incomeId,
             userId: userId
          },
-        data: updateData,
+        data: filteredData,
       });
 
       return res.status(200).json(updatedincome);

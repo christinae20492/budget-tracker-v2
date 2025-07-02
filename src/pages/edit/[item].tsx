@@ -66,6 +66,7 @@ export default function EditEnvelope() {
     const allEnv = data?.envelopes;
     const allInc = data?.incomes;
     
+    if (!allExp || !allInc || !allEnv) return;
     if (allExp.length && allEnv.length && allInc.length) {
       setReturns(assignItem(item, allEnv, allExp, allInc));
     }

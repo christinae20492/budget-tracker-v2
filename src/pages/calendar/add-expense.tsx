@@ -92,6 +92,8 @@ export default function AddExpenses() {
     successToast(`Expense for ${date} added successfully`);
   };
 
+//<span className="p-3 rounded-r-md bg-blue-950 text-white hover:bg-blue-800 dark:bg-blue-dark"><FontAwesomeIcon icon={faSquareCaretDown} /></span>
+
   if (loading) {
     return <LoadingScreen />;
   }
@@ -206,7 +208,6 @@ export default function AddExpenses() {
             >
               Add Expense
             </button>
-            <span className="p-3 rounded-r-md bg-blue-950 text-white hover:bg-blue-800 dark:bg-blue-dark"><FontAwesomeIcon icon={faSquareCaretDown} /></span>
           </div>
         </form>
       </div>

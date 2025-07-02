@@ -35,7 +35,7 @@ export const getAllEnvelopes = async (session: any, status: string): Promise<Env
   }
 };
 
-export const getEnvelopeExpenses = async (id: string, session: any, status: string): Promise<Expense[] | undefined> => {
+export const getEnvelopeExpenses = async (id: string, session: any, status: string, showtoast: boolean): Promise<Expense[] | undefined> => {
   if (status === "loading") {
     warnToast("Authentication status is still loading. Please wait.");
     return;
@@ -55,7 +55,9 @@ export const getEnvelopeExpenses = async (id: string, session: any, status: stri
     }
 
     const data: Expense[] = await response.json();
-    successToast("Expenses loaded successfully!");
+    if (showtoast) {
+      successToast("Expenses loaded successfully!");
+    }
     return data;
   } catch (err: any) {
     console.error("Error fetching expenses:", err);
@@ -65,7 +67,7 @@ export const getEnvelopeExpenses = async (id: string, session: any, status: stri
 };
 
 export const createEnvelope = async (
-  env: Envelope,
+  env: any,
   session: any,
   status: string
 ): Promise<boolean> => {

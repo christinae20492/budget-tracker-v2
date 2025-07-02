@@ -18,12 +18,7 @@ export default async function handler(
       .json({ error: "Envelope ID is required and must be a string." });
   }
 
-  const envelopeId = parseInt(id, 10);
-  if (isNaN(envelopeId)) {
-    return res
-      .status(400)
-      .json({ error: "Invalid Envelope ID provided. Must be a number." });
-  }
+  const envelopeId = Array.isArray(id) ? id[0] : id;
 
   try {
     if (req.method === "GET") {
@@ -56,7 +51,7 @@ export default async function handler(
 
         let updatedExpenses = currentEnvelope.expenses || [];
 
-        if (addExpense !== undefined && typeof addExpense === "number") {
+        if (addExpense !== undefined && typeof addExpense === "string") {
           if (!updatedExpenses.includes(addExpense)) {
             updatedExpenses = [...updatedExpenses, addExpense];
           } else {
@@ -66,7 +61,7 @@ export default async function handler(
           }
         }
 
-        if (removeExpense !== undefined && typeof removeExpense === "number") {
+        if (removeExpense !== undefined && typeof removeExpense === "string") {
           const initialLength = updatedExpenses.length;
           updatedExpenses = updatedExpenses.filter(
             (id) => id !== removeExpense

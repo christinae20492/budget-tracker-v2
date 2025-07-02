@@ -36,7 +36,7 @@ export const getAllNotes = async (session: any, status: string): Promise<Note[] 
 };
 
 export const createNote = async (
-  month: string,
+  month: number,
   content: string,
   session: any,
   status: string

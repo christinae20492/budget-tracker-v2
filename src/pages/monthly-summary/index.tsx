@@ -3,57 +3,100 @@
 import { useEffect, useState } from "react";
 import Layout from "@/app/components/ui/Layout";
 import { getMonthlyExpenditureDetails, totalSpend } from "@/app/utils/expenses";
-import {
-  Envelope,
-  Expense,
-  getEnvelopes,
-  getExpensesForEnvelope,
-  getLocalExpenses,
-  getLocalIncome,
-  Income,
-} from "@/app/utils/localStorage";
 import { filterCurrentMonthExpenses } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
 import Link from "next/link";
 import LoadingScreen from "@/app/components/ui/Loader";
 import Head from "next/head";
+import { Envelope, Expense, Income } from "@/app/utils/types";
+import { useSession } from "next-auth/react";
+import { getAllData } from "@/app/server/data";
+import { getEnvelopeExpenses } from "@/app/server/envelopes";
+import React from "react";
+
+interface SummaryDetails {
+  incomeTotals: number;
+  expenseTotals: number;
+  spendingDifference: number;
+  spendingComparison: number;
+  highestEnvelope: string;
+  highestAmount: number;
+  frequentEnvelope: string;
+  highestSpendingLocation: string;
+  highestSpendingAmount: number;
+}
 
 export default function MonthlySummary() {
-  const [summary, setSummary] = useState<ReturnType<
-    typeof getMonthlyExpenditureDetails
-  > | null>(null);
+  const [summary, setSummary] = useState<SummaryDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [currentExpenses, setCurrentExpenses] = useState<Expense[]>([]);
   const [currentIncomes, setCurrentIncomes] = useState<Income[]>([]);
   const [currentEnvelopes, setCurrentEnvelopes] = useState<Envelope[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
   const [triggeredEnvelopes, setTriggeredEnvelopes] = useState(new Set());
 
+  const summaryDetails = () => {
+    if (
+      currentExpenses.length > 0 &&
+      currentIncomes.length > 0 &&
+      currentEnvelopes.length > 0
+    ) {
+      const details = getMonthlyExpenditureDetails(
+        currentIncomes,
+        currentExpenses
+      );
+      setSummary(details);
+      console.log(summary);
+    }
+  };
+
+  const loadData = async () => {
+    setLoading(true);
+    const data = await getAllData(session, status);
+    if (!data) return;
+    const rawExpenses = data.expenses;
+    const rawIncomes = data.incomes;
+    const rawEnvelopes = data.envelopes;
+    const filteredExpenses = filterCurrentMonthExpenses(rawExpenses);
+
+    const filteredEnvelopes = rawEnvelopes.map(async (env: Envelope) => {
+      const envelopeExpenses = await getEnvelopeExpenses(
+        env.id,
+        session,
+        status,
+        false
+      );
+      if (!envelopeExpenses) return null;
+      const currentMonthExpenses = filterCurrentMonthExpenses(envelopeExpenses);
+
+      return {
+        ...env,
+        expenses: currentMonthExpenses,
+      };
+    });
+
+    const resolvedEnvelopes = await Promise.all(filteredEnvelopes);
+
+    const finalEnvelopes: Envelope[] = resolvedEnvelopes.filter(
+      Boolean
+    ) as Envelope[];
+
+    setCurrentExpenses(filteredExpenses);
+    setCurrentIncomes(rawIncomes);
+    setCurrentEnvelopes(finalEnvelopes);
+
+    summaryDetails();
+
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      const rawExpenses = getLocalExpenses();
-      const rawIncomes = getLocalIncome();
-      const rawEnvelopes = getEnvelopes();
-      const filteredExpenses = filterCurrentMonthExpenses(rawExpenses);
-    const filteredEnvelopes = rawEnvelopes.map((env) => {
-    const envelopeExpenses = getExpensesForEnvelope(env, rawExpenses);
-    const currentMonthExpenses = filterCurrentMonthExpenses(envelopeExpenses);
-
-    return {
-      ...env,
-      expenses: currentMonthExpenses,
-    };
-  });
-
-      setCurrentExpenses(filteredExpenses);
-      setCurrentIncomes(rawIncomes);
-      setCurrentEnvelopes(filteredEnvelopes);
-      setIsLoading(false);
-    };
-
     loadData();
-  }, []);
+    console.log(summary);
+  }, [status]);
 
   useEffect(() => {
     if (currentEnvelopes.length) {
@@ -89,20 +132,6 @@ export default function MonthlySummary() {
     }
   }, [currentEnvelopes, triggeredEnvelopes]);
 
-  useEffect(() => {
-    if (
-      currentExpenses.length > 0 &&
-      currentIncomes.length > 0 &&
-      currentEnvelopes.length > 0
-    ) {
-      const details = getMonthlyExpenditureDetails(
-        currentIncomes,
-        currentExpenses
-      );
-      setSummary(details);
-    }
-  }, [currentExpenses, currentIncomes, currentEnvelopes]);
-
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -131,18 +160,18 @@ export default function MonthlySummary() {
           Spending Compared to Last Month: $
           {summary?.spendingComparison.toFixed(2) ?? 0}
         </p>
-      
-      <p className="my-2">
-        Category with Highest Spending: {summary?.highestEnvelope} with $
-        {summary?.highestAmount.toFixed(2)}
-      </p>
-      <p className="my-2">
-        Most Frequent Purchases Category: {summary?.frequentEnvelope}
-      </p>
-      <p className="my-2">
-        Location w Highest Spending: {summary?.highestSpendingLocation} with $
-        {summary?.highestSpendingAmount.toFixed(2)}
-      </p>
+
+        <p className="my-2">
+          Category with Highest Spending: {summary?.highestEnvelope} with $
+          {summary?.highestAmount.toFixed(2)}
+        </p>
+        <p className="my-2">
+          Most Frequent Purchases Category: {summary?.frequentEnvelope}
+        </p>
+        <p className="my-2">
+          Location w Highest Spending: {summary?.highestSpendingLocation} with $
+          {summary?.highestSpendingAmount.toFixed(2)}
+        </p>
       </div>
 
       <h2 className="text-center mt-4">Envelope Budgets</h2>
