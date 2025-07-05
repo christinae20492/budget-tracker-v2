@@ -39,3 +39,50 @@ export const getAllData = async (session: any, status: string): Promise<Data | u
     return undefined;
   }
 };
+
+export const deleteUserAccount = async (
+  userId: string,
+  password: string,
+  session: any, // Use proper type for session if available
+  status: string
+): Promise<boolean> => {
+  if (status === "loading" || status === "unauthenticated" || !session?.user?.id) {
+    warnToast("Authentication required to delete account.");
+    return false;
+  }
+
+  if (session.user.id !== userId) {
+      warnToast("Authorization error: Cannot delete another user's account.");
+      return false;
+  }
+
+  if (!password) {
+    warnToast("Please enter your password to confirm account deletion.");
+    return false;
+  }
+
+  try {
+    const response = await fetch(`/api/user/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+      credentials: 'include', // Important for NextAuth session cookies
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      successToast(result.message || 'Account deleted successfully.');
+      return true;
+    } else {
+      failToast(result.message || 'Failed to delete account.');
+      return false;
+    }
+  } catch (error) {
+    console.error("Client-side error deleting account:", error);
+    failToast("An unexpected error occurred during account deletion.");
+    return false;
+  }
+};

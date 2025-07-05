@@ -38,18 +38,16 @@ export default function MonthlySummary() {
 
   const [triggeredEnvelopes, setTriggeredEnvelopes] = useState(new Set());
 
-  const summaryDetails = () => {
+  const summaryDetails = (inc: Income[], exp: Expense[]) => {
     if (
-      currentExpenses.length > 0 &&
-      currentIncomes.length > 0 &&
-      currentEnvelopes.length > 0
+      exp.length > 0 &&
+      inc.length > 0
     ) {
       const details = getMonthlyExpenditureDetails(
-        currentIncomes,
-        currentExpenses
+        inc,
+        exp
       );
       setSummary(details);
-      console.log(summary);
     }
   };
 
@@ -88,14 +86,13 @@ export default function MonthlySummary() {
     setCurrentIncomes(rawIncomes);
     setCurrentEnvelopes(finalEnvelopes);
 
-    summaryDetails();
+    summaryDetails(rawIncomes, rawExpenses);
 
     setIsLoading(false);
   };
 
   useEffect(() => {
     loadData();
-    console.log(summary);
   }, [status]);
 
   useEffect(() => {
@@ -132,6 +129,11 @@ export default function MonthlySummary() {
     }
   }, [currentEnvelopes, triggeredEnvelopes]);
 
+    const getEnvelopeTitle = (envelopeId: any) => {
+    const envelope = currentEnvelopes.find((env) => env.id === envelopeId);
+    return envelope ? envelope.title : "Unknown Envelope";
+  };
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -162,11 +164,11 @@ export default function MonthlySummary() {
         </p>
 
         <p className="my-2">
-          Category with Highest Spending: {summary?.highestEnvelope} with $
+          Category with Highest Spending: {getEnvelopeTitle(summary?.highestEnvelope)} with $
           {summary?.highestAmount.toFixed(2)}
         </p>
         <p className="my-2">
-          Most Frequent Purchases Category: {summary?.frequentEnvelope}
+          Most Frequent Purchases Category: {getEnvelopeTitle(summary?.frequentEnvelope)}
         </p>
         <p className="my-2">
           Location w Highest Spending: {summary?.highestSpendingLocation} with $

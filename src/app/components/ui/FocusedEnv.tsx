@@ -112,6 +112,8 @@ export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
           Total Spent: <strong>${totalSpent.toFixed(2)}</strong>
         </h2>
 
+        <p className='my-3'>"{envelopeData.comments}"</p>
+
         <h2 className="mt-4 text-lg font-semibold">Expenses</h2>
         {expenses.length > 0 ? (
           <ul className="list-disc pl-5">

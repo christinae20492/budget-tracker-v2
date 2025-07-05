@@ -94,16 +94,26 @@ export default function EnvelopesPage() {
     await fetchData();
   };
 
-  const calculateTotalSpentToday = () => {
-    const today = getFormattedDate();
-    const total = filteredExpenses
-      .filter((expense) => expense.date === today)
-      .reduce((total, expense) => total + expense.amount, 0);
+const calculateTotalSpentToday = () => {
+  const getFormattedDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const day = today.getDate().toString().padStart(2, '0');
 
-    if (!total) return 0;
+  return `${year}-${month}-${day}`;
+};
+  const todayFormatted = getFormattedDate();
 
-    return total;
-  };
+  const total = filteredExpenses
+    .filter((expense) => {
+      const expenseDatePart = expense.date ? String(expense.date).substring(0, 10) : '';
+      return expenseDatePart === todayFormatted;
+    })
+    .reduce((currentTotal, expense) => currentTotal + expense.amount, 0);
+
+  return total;
+};
 
   const goToDetails = (env: Envelope) => {
     setEnvId(env.id);

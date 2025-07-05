@@ -67,8 +67,8 @@ export default function AddEnvelope({ onClose, envelopes }: EnvelopeModalProps) 
 
   return (
     <div className="modal-bg">
-      <div className="modal-backdrop" onClick={onClose}></div>
       <div className="modal-main">
+        <span className="float-right bg-red-600 rounded-lg text-white p-2" onClick={onClose}>x</span>
         <h2 className="text-center">Create an Envelope</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

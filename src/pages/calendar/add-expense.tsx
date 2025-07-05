@@ -45,19 +45,18 @@ export default function AddExpenses() {
 
   useEffect(() => {
     fetchData();
+    if (envelopes.length === 0) {
+      warnToast("You need to create an envelope before creating an expense.")
+    }
   }, [session, status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("Starting post");
-
     if (loading || status === "loading" || status === "unauthenticated") {
       warnToast("Please wait for authentication/data to load.");
       return;
     }
-
-    console.log(status);
 
     if (!location || !envelope || !date || !amount) {
       warnToast("Please fill in all required fields.");

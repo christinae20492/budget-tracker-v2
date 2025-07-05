@@ -4,6 +4,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { successToast, failToast } from "@/app/utils/toast";
 import "@/app/tailwind.css";
+import Head from "next/head";
 
 const SignInPage: React.FC = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -12,11 +13,13 @@ const SignInPage: React.FC = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-   useEffect(() => {
-    if (status === 'loading') return;
+  useEffect(() => {
+    if (status === "loading") return;
 
-    if (status === 'authenticated') {
-      const callbackUrl = router.query.callbackUrl ? String(router.query.callbackUrl) : '/';
+    if (status === "authenticated") {
+      const callbackUrl = router.query.callbackUrl
+        ? String(router.query.callbackUrl)
+        : "/";
       router.push(callbackUrl);
     }
   }, [status, router]);
@@ -36,13 +39,13 @@ const SignInPage: React.FC = () => {
         redirect: false,
         usernameOrEmail,
         password,
-        callbackUrl: '/'
+        callbackUrl: "/",
       });
 
       if (result?.error) {
         failToast("Invalid credentials. Please try again.");
       } else if (result?.ok) {
-        router.push(result.url || '/');
+        router.push(result.url || "/");
       }
     } catch (error) {
       console.error("An unexpected error occurred during sign-in:", error);
@@ -53,63 +56,77 @@ const SignInPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 p-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-2xl space-y-6 transform transition-all duration-300 hover:scale-105">
-        <div>
-          <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-2">
-            Welcome Back!
-          </h2>
-          <p className="text-center text-sm text-gray-600">
-            Sign in to access your expenses.
-          </p>
-        </div>
-        <form className="space-y-6" onSubmit={handleSubmit}>
+    <>
+      <Head>
+        <title>Welcome to Just A Bit!</title>
+        <link rel="icon" href="@/app/public/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+      <div className="min-h-screen flex items-center justify-center bg-blue-pale p-4">
+        <div className="max-w-md w-full bg-white border-2 border-grey-600 p-8 rounded-xl shadow-2xl space-y-6 transform transition-all duration-300 hover:scale-105">
           <div>
-            <label htmlFor="username-email" className="sr-only">Username or Email</label>
-            <input
-              id="username-email"
-              name="username-email"
-              type="text"
-              autoComplete="username"
-              required
-              className="relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-base transition duration-200"
-              placeholder="Username or Email"
-              value={usernameOrEmail}
-              onChange={(e) => setUsernameOrEmail(e.target.value)}
-            />
+            <h2 className="header font-extrabold text-gray-900 text-center mb-2">
+              Welcome Back!
+            </h2>
+            <p className="text-center text-sm text-gray-600">
+              Sign in to access your expenses.
+            </p>
           </div>
-          <div>
-            <label htmlFor="password" className="sr-only">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-base transition duration-200"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="username-email" className="sr-only">
+                Username or Email
+              </label>
+              <input
+                id="username-email"
+                name="username-email"
+                type="text"
+                autoComplete="username"
+                required
+                className="relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-cobalt focus:border-blue-cobalt sm:text-base transition duration-200"
+                placeholder="Username or Email"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-cobalt focus:border-cobalt-500 sm:text-base transition duration-200"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-semibold rounded-lg text-white bg-blue hover:bg-blue-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-royalBlue-800 transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing In..." : "Sign In"}
+            </button>
+          </form>
+
+          <div className="text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link
+              href="register"
+              className="font-medium hover:text-blue-600 hover:underline transition duration-200"
+            >
+              Register here
+            </Link>
           </div>
-
-          <button
-            type="submit"
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-semibold rounded-lg text-white bg-blue hover:bg-blue-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-royalBlue-800 transition duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing In..." : "Sign In"}
-          </button>
-        </form>
-
-        <div className="text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link href="register" className="font-medium text-royalBlue-700 hover:text-royalBlue-800 hover:underline transition duration-200">
-            Register here
-          </Link>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

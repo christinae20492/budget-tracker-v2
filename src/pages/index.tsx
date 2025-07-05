@@ -9,6 +9,7 @@ import { signIn, useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
 import { getAllData } from "@/app/server/data";
 import { Expense, Income } from "@/app/utils/types";
+import { ConfirmModal } from "@/app/components/ui/ConfirmModal";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);

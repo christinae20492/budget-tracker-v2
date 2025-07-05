@@ -21,6 +21,8 @@ import { useSession } from "next-auth/react";
 import { getAllExpenses } from "@/app/server/expenses";
 import { getAllIncomes } from "@/app/server/incomes";
 import LoadingScreen from "@/app/components/ui/Loader";
+import { Envelope } from "@/app/utils/types";
+import { getAllData } from "@/app/server/data";
 
 ChartJS.register(
   CategoryScale,
@@ -45,23 +47,33 @@ interface YearSummaryDetails {
 
 export default function YearlySummary() {
   const [summary, setSummary] = useState<YearSummaryDetails | null>(null);
+  const [envelopes, setEnvelopes] = useState<Envelope[]>([])
   const [isLoading, setIsLoading] = useState(false);
   const { data: session, status } = useSession();
   const [year, setYear] = useState(new Date().getFullYear());
 
   const fetchData = async () => {
     setIsLoading(true);
-    const allExp = await getAllExpenses(session, status);
-    const allInc = await getAllIncomes(session, status);
+    const data = await getAllData(session, status);
+    if (!data) return;
+    const allExp = data.expenses;
+    const allInc = data.incomes;
+    const allEnv = data.envelopes
     if (!allExp || !allInc) return;
     const details = getYearlyExpenditureDetails(allInc, allExp, year);
     setSummary(details);
+    setEnvelopes(allEnv)
     setIsLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, [year, status]);
+
+      const getEnvelopeTitle = (envelopeId: any) => {
+    const envelope = envelopes.find((env) => env.id === envelopeId);
+    return envelope ? envelope.title : "Unknown Envelope";
+  };
 
   if (!summary || isLoading) {
     return <LoadingScreen />;
@@ -143,11 +155,11 @@ export default function YearlySummary() {
         </p>
 
         <p className="my-2">
-          Category with Highest Spending: {summary.highestEnvelope} - $
+          Category with Highest Spending: {getEnvelopeTitle(summary.highestEnvelope)} - $
           {summary.highestAmount}
         </p>
         <p className="my-2">
-          Most Frequent Purchases Category: {summary.frequentEnvelope}
+          Most Frequent Purchases Category: {getEnvelopeTitle(summary.frequentEnvelope)}
         </p>
       </div>
 
