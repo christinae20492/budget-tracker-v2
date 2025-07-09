@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "currency" TEXT NOT NULL DEFAULT 'USD',
+ADD COLUMN     "darkMode" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isAdmin" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "language" TEXT NOT NULL DEFAULT 'English',
+ADD COLUMN     "optInEmails" BOOLEAN NOT NULL DEFAULT true;

@@ -26,7 +26,7 @@ export const getAllExpenses = async (session: any, status: string): Promise<Expe
     }
 
     const data: Expense[] = await response.json();
-    successToast("Expenses loaded successfully!");
+    //successToast("Expenses loaded successfully!");
     return data;
   } catch (err: any) {
     console.error("Error fetching expenses:", err);

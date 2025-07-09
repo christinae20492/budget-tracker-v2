@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/app/prisma';
 import bcryptjs from 'bcryptjs';
+import { sendWelcomeEmail } from '@/app/server/emails/welcome';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -59,6 +60,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     res.status(201).json({ user: newUser });
+    if (newUser) {
+      await sendWelcomeEmail(newUser.email, newUser.username)
+    }
 
   } catch (error) {
     console.error("Error during user registration:", error);

@@ -196,7 +196,7 @@ export default function MonthlySummary() {
                 {env.expenses?.map((expense, idx) => (
                   <p
                     key={idx}
-                    className="expense-item text-gray-700 dark:text-gray-400"
+                    className="expense-item text-gray-700 dark:text-gray-400 my-0"
                   >
                     {expense.location}: ${expense.amount}
                   </p>

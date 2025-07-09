@@ -88,7 +88,8 @@ export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
   useEffect(() => {
     if (envelope && typeof envelope === "string" && status === "authenticated") {
         fetchData();
-    }
+          }
+  
   }, [envelope, status]);
 
   if (!envelopeData) {
@@ -101,8 +102,7 @@ export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
     return <LoadingScreen />;
   }
   return (
-    <div className='modal-bg text-center'>
-    <div onClick={onClose} className='fixed inset-0 bg-black bg-opacity-50'>
+    <div onClick={onClose} className='modal-bg text-center'>
     <div className="modal-main w-1/2 h-5/6 my-5">
         <h1 className="header">{envelopeData.title} Details</h1>
         <h2 className="text-gray-600">
@@ -137,7 +137,6 @@ export default function FocusedEnv({ onClose, envelope }: FocusedEnvProps) {
             No expenses recorded for this envelope this month.
           </p>
         )}
-      </div>
       </div>
       </div>
   )

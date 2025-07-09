@@ -9,10 +9,12 @@ import Layout from "@/app/components/ui/Layout";
 import { addExpenseToEnvelope, createExpense } from "@/app/server/expenses";
 import { useSession } from "next-auth/react";
 import { getAllEnvelopes } from "@/app/server/envelopes";
-import { Envelope } from "@/app/utils/types";
+import { Envelope, Expense } from "@/app/utils/types";
 import LoadingScreen from "@/app/components/ui/Loader";
 import { faSquareCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
+import React from "react";
 
 export default function AddExpenses() {
   const searchParams = useSearchParams();
@@ -22,6 +24,7 @@ export default function AddExpenses() {
   const initialDate = selectedDate || new Date().toISOString().split("T")[0];
 
   const [loading, setLoading] = useState(false);
+  const [loadedExp, setLoadedExp] = useState<Expense | null>(null)
 
   const [location, setLocation] = useState("");
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
@@ -45,10 +48,13 @@ export default function AddExpenses() {
 
   useEffect(() => {
     fetchData();
-    if (envelopes.length === 0) {
-      warnToast("You need to create an envelope before creating an expense.")
-    }
   }, [session, status]);
+
+  useEffect(() => {
+    if (envelopes.length === 0) {
+      warnToast("You need to create an envelope before creating an expense.");
+    }
+  }, [envelopes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +97,7 @@ export default function AddExpenses() {
     successToast(`Expense for ${date} added successfully`);
   };
 
-//<span className="p-3 rounded-r-md bg-blue-950 text-white hover:bg-blue-800 dark:bg-blue-dark"><FontAwesomeIcon icon={faSquareCaretDown} /></span>
+  //<span className="p-3 rounded-r-md bg-blue-950 text-white hover:bg-blue-800 dark:bg-blue-dark"><FontAwesomeIcon icon={faSquareCaretDown} /></span>
 
   if (loading) {
     return <LoadingScreen />;
@@ -146,6 +152,17 @@ export default function AddExpenses() {
                 </option>
               ))}
             </select>
+            {envelopes.length === 0 && (
+              <p className="text-center text-gray-700">
+                Don't have any envelopes?
+                <Link
+                  href="/envelopes?openEnvelopeModal=true"
+                  className="text-blue-600 hover:underline ml-2"
+                >
+                  Click here to create one.
+                </Link>
+              </p>
+            )}
           </div>
 
           <div>
@@ -203,7 +220,7 @@ export default function AddExpenses() {
           <div className="text-center">
             <button
               type="submit"
-              className="px-4 py-2 rounded-l-md bg-blue-500 text-white hover:bg-blue-700 dark:bg-blue-400"
+              className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-700 dark:bg-blue-400"
             >
               Add Expense
             </button>

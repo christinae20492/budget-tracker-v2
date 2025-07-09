@@ -9,7 +9,6 @@ import { signIn, useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
 import { getAllData } from "@/app/server/data";
 import { Expense, Income } from "@/app/utils/types";
-import { ConfirmModal } from "@/app/components/ui/ConfirmModal";
 
 export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -42,11 +41,11 @@ export default function Index() {
     }
 
     if (status === "unauthenticated") {
-      sleep(3500);
+      sleep(2500);
       warnToast("Please login to access this page.");
       signIn();
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,10 +73,10 @@ export default function Index() {
       setLoading(false)
     };
 
-    if (session) {
+    if (session && status) {
       fetchData();
     }
-  }, []);
+  }, [session, status]);
 
   const Message = () => {
     if (summary.difference > 0) {

@@ -26,7 +26,7 @@ export const getAllEnvelopes = async (session: any, status: string): Promise<Env
     }
 
     const data: Envelope[] = await response.json();
-    successToast("Envelopes loaded successfully!");
+    //successToast("Envelopes loaded successfully!");
     return data;
   } catch (err: any) {
     console.error("Error fetching envelopes:", err);
@@ -101,7 +101,7 @@ export const createEnvelope = async (
     const result = await response.json();
 
     if (response.ok) {
-      //successToast(result.message || "Envelope created successfully!");
+      successToast(result.message || "Envelope created successfully!");
       return true;
     } else {
       failToast(result.message || "Failed to create envelope. Please try again.");
@@ -182,6 +182,8 @@ export const updateEnvelope = async (
     warnToast("No update data provided.");
     return false;
   }
+
+  console.log(updateData)
 
   try {
     const response = await fetch(`/api/envelopes/${envelopeId}`, {

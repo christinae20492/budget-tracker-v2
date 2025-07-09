@@ -26,7 +26,7 @@ export const getAllIncomes = async (session: any, status: string): Promise<Incom
     }
 
     const data: Income[] = await response.json();
-    successToast("Incomes loaded successfully!");
+    //successToast("Incomes loaded successfully!");
     return data;
   } catch (err: any) {
     console.error("Error fetching incomes:", err);

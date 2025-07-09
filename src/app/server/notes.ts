@@ -26,7 +26,7 @@ export const getAllNotes = async (session: any, status: string): Promise<Note[] 
     }
 
     const data: Note[] = await response.json();
-    successToast("Notes loaded successfully!");
+    //successToast("Notes loaded successfully!");
     return data;
   } catch (err: any) {
     console.error("Error fetching notes:", err);

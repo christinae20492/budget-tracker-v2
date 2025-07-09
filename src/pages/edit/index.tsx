@@ -79,9 +79,9 @@ export default function ManageExpenses() {
                 className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-blue-200 hover:border-blue-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
                 onClick={() => handleItemClick(expense)}
               >
-                <p>{getFormattedDate(expense.date)}</p>
-                <p>{expense.location}</p>
-                <p>{formatCurrency(expense.amount)}</p>
+                <p className="my-0">{getFormattedDate(expense.date)}</p>
+                <p className="my-0">{expense.location}</p>
+                <p className="my-0">{formatCurrency(expense.amount)}</p>
               </div>
             ))}
           </div>
@@ -97,9 +97,9 @@ export default function ManageExpenses() {
                 className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-purple-200 hover:border-purple-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
                 onClick={() => handleItemClick(income)}
               >
-                <p>{getFormattedDate(income.date)}</p>
-                <p>{income.source}</p>
-                <p>{formatCurrency(income.amount)}</p>
+                <p className="my-0">{getFormattedDate(income.date)}</p>
+                <p className="my-0">{income.source}</p>
+                <p className="my-0">{formatCurrency(income.amount)}</p>
               </div>
             ))}
           </div>
@@ -115,17 +115,17 @@ export default function ManageExpenses() {
                 className="p-2 border rounded shadow mb-2 cursor-pointer hover:bg-amber-200 hover:border-amber-950 hover:rounded-2xl transition-all drop-shadow-md dark:hover:text-black"
                 onClick={() => handleEnvClick(envelope)}
               >
-                <p>
+                <p className="my-0">
                   <strong>Title:</strong> {envelope.title}
                 </p>
-                <p>
+                <p className="my-0">
                   <strong>Budget:</strong>{" "}
                   {formatCurrency(envelope.budget ?? 0)}
                 </p>
-                <p>
+                <p className="my-0">
                   <strong>Type:</strong> {envelope.fixed ? "Fixed" : "Variable"}
                 </p>
-                <p>
+                <p className="my-0">
                   <strong>Color:</strong>
                   <span
                     style={{

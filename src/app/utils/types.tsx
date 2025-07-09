@@ -64,14 +64,14 @@ export interface EditIncome {
 }
 
 export interface EditEnvelope {
-  title: string | null;
-  fixed: boolean | null;
-  budget: number | null;
-  icon: string | null;
-  color: string | null;
-  addExpense: number | null;
-  removeExpense: number | null;
-  comments: string | null;
+  title: string | null | undefined;
+  fixed: boolean | null | undefined;
+  budget: number | null | undefined;
+  icon: string | null | undefined;
+  color: string | null | undefined;
+  addExpense: number | null | undefined;
+  removeExpense: number | null | undefined;
+  comments: string | null | undefined;
 }
 
 export interface EditNote {

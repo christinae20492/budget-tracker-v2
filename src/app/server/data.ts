@@ -1,5 +1,5 @@
 
-import { warnToast, failToast, successToast } from "../utils/toast";
+import { warnToast, failToast, successToast, progressToast } from "../utils/toast";
 import { Envelope, Expense, Income, Note } from "../utils/types";
 
 interface Data {
@@ -31,7 +31,7 @@ export const getAllData = async (session: any, status: string): Promise<Data | u
     }
 
     const data: Data = await response.json();
-    successToast("Data loaded successfully!");
+    //successToast("Data loaded successfully!");
     return data;
   } catch (err: any) {
     console.error("Error fetching data", err);
@@ -43,7 +43,7 @@ export const getAllData = async (session: any, status: string): Promise<Data | u
 export const deleteUserAccount = async (
   userId: string,
   password: string,
-  session: any, // Use proper type for session if available
+  session: any,
   status: string
 ): Promise<boolean> => {
   if (status === "loading" || status === "unauthenticated" || !session?.user?.id) {
@@ -68,13 +68,13 @@ export const deleteUserAccount = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ password }),
-      credentials: 'include', // Important for NextAuth session cookies
+      credentials: 'include',
     });
 
     const result = await response.json();
 
     if (response.ok) {
-      successToast(result.message || 'Account deleted successfully.');
+      progressToast(result.message || 'Account deleted successfully.');
       return true;
     } else {
       failToast(result.message || 'Failed to delete account.');

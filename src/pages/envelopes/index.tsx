@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import PieChart from "@/app/components/ui/PieChart";
 import {
@@ -83,11 +83,30 @@ export default function EnvelopesPage() {
   useEffect(() => {
     const initializeData = async () => {
       await fetchData();
-      //envelopes.forEach((envelope) => calculateRemainingBudget(envelope));
+      envelopes.forEach((envelope) => calculateRemainingBudget(envelope));
     };
 
     initializeData();
   }, [status]);
+
+  useEffect(() => {
+    if (router.query.openEnvelopeModal === 'true') {
+      setAddEnvVisible(true);
+
+      const { pathname, query } = router;
+      const newQuery = { ...query };
+      delete newQuery.openEnvelopeModal;
+
+      router.replace(
+        {
+          pathname,
+          query: newQuery,
+        },
+        undefined,
+        { shallow: true }
+      );
+    }
+  }, [router]);
 
   const handleCloseModal = async () => {
     setAddEnvVisible(false);
@@ -104,10 +123,11 @@ const calculateTotalSpentToday = () => {
   return `${year}-${month}-${day}`;
 };
   const todayFormatted = getFormattedDate();
+  console.log(todayFormatted)
 
   const total = filteredExpenses
     .filter((expense) => {
-      const expenseDatePart = expense.date ? String(expense.date).substring(0, 10) : '';
+      const expenseDatePart = expense.date ? String(expense.date) : '';
       return expenseDatePart === todayFormatted;
     })
     .reduce((currentTotal, expense) => currentTotal + expense.amount, 0);
@@ -129,7 +149,7 @@ const calculateTotalSpentToday = () => {
         warnToast(
           `${envelope.title}'s budget has been exceeded for this month.`
         );
-      } else if (remainingBudget <= 30 && envelope.fixed === true) {
+      } else if (remainingBudget <= 10 && envelope.fixed === true) {
         warnToast(
           `${
             envelope.title
@@ -198,6 +218,7 @@ const calculateTotalSpentToday = () => {
         .reduce((total, expense) => total + expense.amount, 0);
       dailySpending.push({ date: day, total: dailyTotal });
     });
+    console.log(dailySpending)
 
     return dailySpending;
   };

@@ -6,11 +6,11 @@ export const sendWelcomeEmail = async (to: string, username: string) => {
     const data = await resend.emails.send({
       from: "welcome@justabit.app",
       to,
-      subject: "Welcome to Justabit!",
+      subject: "Welcome to Just A Bit!",
       html: `
-        <h1>Welcome, ${username}!</h1>
-        <p>Thanks for joining Just A Bit. We're excited to have you on board 🚀.</p>
-        <p>Get started by exploring your dashboard and organizing your budget efficiently.</p>
+        <h1>Nice to meet you, ${username}!</h1>
+        <p>Welcome to Just A Bit! We're thrilled to have you join our community. Get ready to take control of your finances with ease. Our intuitive tools help you effortlessly track income, manage expenses with smart envelopes, and gain clear insights into your spending habits. Start your journey to financial peace of mind today!</p>
+        <p>Get started by exploring your dashboard and organizing your budget efficiently. Create an envelope to get started adding expenses and incomes. If you have any questions, visit the 'Help' tab within the 'Account' page.</p>
       `,
     });
     console.log("Welcome email sent:", data);

@@ -2,10 +2,11 @@ import { ConfirmModal } from "@/app/components/ui/ConfirmModal";
 import HelpPage from "@/app/components/ui/HelpPage";
 import Layout from "@/app/components/ui/Layout";
 import LoadingScreen from "@/app/components/ui/Loader";
+import { ToggleButton } from "@/app/components/ui/Toggle";
 import { deleteUserAccount } from "@/app/server/data";
 import { updateUserProfile, UserProfileUpdates } from "@/app/server/user";
 import { successToast, failToast, progressToast } from "@/app/utils/toast";
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import router from "next/router";
 import React, { useEffect, useState } from "react";
@@ -18,10 +19,14 @@ export default function acc() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletion, setDeletion] = useState("");
   const [tab, setTab] = useState("Account");
-  const [helptab, setHelpTab] = useState("Introduction")
+  const [helptab, setHelpTab] = useState("Introduction");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!session && status === "unauthenticated") {
+      signIn();
+    }
+
     setLoading(true);
     if (session && status) {
       if (
@@ -115,8 +120,16 @@ export default function acc() {
       </Head>
 
       {deleteModal && (
-        <ConfirmModal dialogue="Are you sure you want to delete EVERYTHING? Just to be sure, enter your password:" renderInput={deletionInput} buttonOne="Confirm Deletion"
-        buttonOneAction={handleDelete} buttonTwo="Cancel" buttonTwoAction={()=>{setDeleteModal(false)}}/>
+        <ConfirmModal
+          dialogue="Are you sure you want to delete EVERYTHING? Just to be sure, enter your password:"
+          renderInput={deletionInput}
+          buttonOne="Confirm Deletion"
+          buttonOneAction={handleDelete}
+          buttonTwo="Cancel"
+          buttonTwoAction={() => {
+            setDeleteModal(false);
+          }}
+        />
       )}
 
       <div className="xl:m-4 relative">
@@ -155,10 +168,7 @@ export default function acc() {
             >
               Help
             </li>
-            <li
-              onClick={handleSignOut}
-              className="acc-tabs hover:bg-red-500"
-            >
+            <li onClick={handleSignOut} className="acc-tabs hover:bg-red-500">
               Signout
             </li>
           </ul>
@@ -167,29 +177,84 @@ export default function acc() {
           {tab === "Actions" ? (
             <main className="md:w-4/5 text-center">
               <section className="my-4 w-2/3 mx-auto">
-                <p>We understand the sensitivity of your personal and financial information. This section outlines our unwavering commitment to protecting your data. We collect and use your account details (like username and email) and financial data (your transactions, income, and budget allocations) solely to provide you with seamless budgeting services, personalize your experience, and improve our app's functionality.</p>
-                <p>We employ robust security measures, including encryption, to safeguard your information against unauthorized access. We guarantee that your personal and financial data is never sold, rented, or shared with third parties for marketing or advertising purposes.</p>
-                <p>You maintain complete control over your account. You can update your details, manage your preferences, and permanently delete your account and all associated data at any time.</p>
+                <p>
+                  We understand the sensitivity of your personal and financial
+                  information. This section outlines our unwavering commitment
+                  to protecting your data. We collect and use your account
+                  details (like username and email) and financial data (your
+                  transactions, income, and budget allocations) solely to
+                  provide you with seamless budgeting services, personalize your
+                  experience, and improve our app's functionality.
+                </p>
+                <p>
+                  We employ robust security measures, including encryption, to
+                  safeguard your information against unauthorized access. We
+                  guarantee that your personal and financial data is never sold,
+                  rented, or shared with third parties for marketing or
+                  advertising purposes.
+                </p>
+                <p>
+                  You maintain complete control over your account. You can
+                  update your details, manage your preferences, and permanently
+                  delete your account and all associated data at any time.
+                </p>
               </section>
-              <button className="button my-6" onClick={beginDelete}>Delete Account</button>
+              <button className="button my-6" onClick={beginDelete}>
+                Delete Account
+              </button>
             </main>
-            ) : tab === 'Help' ? (
-              <main className="grid grid-cols-4 grid-rows-10 md:w-full">
-                <aside className="md:inline hidden">
-                  <ul className="flex flex-col justify-start">
-                    <li className="help-tabs" onClick={() => setHelpTab("Introduction")}>Introduction</li>
-                    <li className="help-tabs" onClick={() => setHelpTab("Home")}>Home</li>
-                    <li className="help-tabs" onClick={() => setHelpTab("Calendar")}>Calendar</li>
-                    <li className="help-tabs" onClick={() => setHelpTab("Summary")}>Summary</li>
-                    <li className="help-tabs" onClick={() => setHelpTab("Envelopes")}>Envelopes</li>
-                    <li className="help-tabs" onClick={() => setHelpTab("Edit")}>Edit</li>
-                    <li className="help-tabs" onClick={() => setHelpTab("Notes")}>Notes</li>
-                  </ul>
-                </aside>
-                <section className="col-span-3 mt-4 px-8">
-                  <HelpPage currentTab={helptab}/>
-                </section>
-              </main>
+          ) : tab === "Preferences" ? (
+            <main className="md:w-4/5">
+              <h2 className="text-2xl font-semibold my-4 text-center">
+                User Preferences
+              </h2>
+              <section>
+                <ToggleButton />
+              </section>
+            </main>
+          ) : tab === "Help" ? (
+            <main className="grid grid-cols-4 grid-rows-10 md:w-full">
+              <aside className="md:inline hidden">
+                <ul className="flex flex-col justify-start">
+                  <li
+                    className="help-tabs"
+                    onClick={() => setHelpTab("Introduction")}
+                  >
+                    Introduction
+                  </li>
+                  <li className="help-tabs" onClick={() => setHelpTab("Home")}>
+                    Home
+                  </li>
+                  <li
+                    className="help-tabs"
+                    onClick={() => setHelpTab("Calendar")}
+                  >
+                    Calendar
+                  </li>
+                  <li
+                    className="help-tabs"
+                    onClick={() => setHelpTab("Summary")}
+                  >
+                    Summary
+                  </li>
+                  <li
+                    className="help-tabs"
+                    onClick={() => setHelpTab("Envelopes")}
+                  >
+                    Envelopes
+                  </li>
+                  <li className="help-tabs" onClick={() => setHelpTab("Edit")}>
+                    Edit
+                  </li>
+                  <li className="help-tabs" onClick={() => setHelpTab("Notes")}>
+                    Notes
+                  </li>
+                </ul>
+              </aside>
+              <section className="col-span-3 mt-4 px-8">
+                <HelpPage currentTab={helptab} />
+              </section>
+            </main>
           ) : (
             <main className="md:w-4/5">
               <section className="mb-8 p-6 bg-white rounded-lg shadow">

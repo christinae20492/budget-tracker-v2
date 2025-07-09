@@ -262,7 +262,7 @@ export const getBudgetLimits = async (session: any, status: string) => {
   return envelopes.map((env) => ({ title: env.title, budget: env.budget }));
 };
 
-export const totalSpend = (envelope: Envelope): number => {
+export const totalSpend = (envelope: Envelope) => {
   if (!envelope.expenses || envelope.expenses.length === 0) {
     return 0;
   }

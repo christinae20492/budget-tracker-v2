@@ -74,23 +74,21 @@ const ItemView: React.FC<ItemViewProps> = ({
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
     const envData: EditEnvelope = {
-      title: null,
-      fixed: null,
-      budget: budgetValue,
-      icon: null,
-      color: null,
-      addExpense: null,
-      removeExpense: null,
-      comments: null,
+      budget: numValue,
+      title: undefined,
+      fixed: undefined,
+      icon: undefined,
+      color: undefined,
+      addExpense: undefined,
+      removeExpense: undefined,
+      comments: undefined
     };
 
     saveTimeoutRef.current = setTimeout(async () => {
       if (envelopeItem) {
         await updateEnvelope(envelopeItem.id, envData, session, status);
-
-        successToast(`${envelopeItem.title}'s was budget updated to $${value}`);
       }
-    }, 800);
+    }, 1000);
   };
 
   if (loading) {
