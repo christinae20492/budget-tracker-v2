@@ -9,26 +9,33 @@ import {
   faChartPie,
   faEnvelope,
   faPenToSquare,
-  faLightbulb,
   faBookBookmark,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
+import { useSession } from "next-auth/react";
+import { getUser } from "@/app/server/user";
 
 export default function FloatingMenu() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const {data: session, status} = useSession();
+
+  const getThemeSettings = async () =>{
+    if (!session) return;
+    const data = await getUser(session.user.id, session, status)
+    if (!data) return;
+    const theme = data.darkMode;
+    if (theme) {
+      setIsDarkTheme(true)
+    } else {
+      setIsDarkTheme(false)
+    }
+  }
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setIsDarkTheme(savedTheme === "dark");
-  }, []);
-
-  const handleToggleTheme = () => {
-    toggleTheme();
-    setIsDarkTheme((prev) => !prev);
-  };
-
-
-      
+    getThemeSettings();
+    toggleTheme(isDarkTheme)
+  }, [session, isDarkTheme]);
+  
   return (
     <div className="floating-menu">
       <Link href={"/user/acc"}>
@@ -54,13 +61,6 @@ export default function FloatingMenu() {
       <Link href={"/notes"}>
         <FontAwesomeIcon icon={faBookBookmark} className="menu-icon" />
       </Link>
-      <button onClick={handleToggleTheme} id="theme-toggle">
-        {isDarkTheme ? (
-          <FontAwesomeIcon icon={faLightbulb} className="menu-icon" />
-        ) : (
-          <FontAwesomeIcon icon={faLightbulb} className="menu-icon" />
-        )}
-      </button>
     </div>
   );
 }

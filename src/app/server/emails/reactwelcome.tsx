@@ -1,7 +1,3 @@
-// components/emails/WelcomeEmail.tsx
-// This component is designed to be rendered on the server-side
-// using React Email's `render` function.
-
 import * as React from 'react';
 import {
   Html,
@@ -34,7 +30,7 @@ interface WelcomeEmailProps {
 // Default values for props to prevent undefined errors during development/testing
 const defaultProps: WelcomeEmailProps = {
   username: 'Valued User',
-  loginUrl: 'https://your-app-domain.com/auth/login',
+  loginUrl: 'https://justabit.app/auth/login',
   appName: 'Just A Bit',
   helpCenterUrl: 'https://your-app-domain.com/help',
 };

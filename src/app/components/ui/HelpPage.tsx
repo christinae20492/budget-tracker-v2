@@ -372,8 +372,9 @@ export default function HelpPage({ currentTab }: HelpPageProps) {
             <p>
               The notes page will be the simplest to pick up. You use this page
               to create notes for the month - maybe "I need to add more to my
-              savings" or "I need to cut back spending at Nordstrom." The
-              interface is clean and very to the point. You can use the selector
+              savings" or "I need to cut back spending at Nordstrom." Notes will render in a list for you,
+              and if you want to delete one, just hover over it (or click if 
+              you're on mobile) to show the delete icon. You can use the selector
               on top to change months.
             </p>
             <span className="mx-auto">

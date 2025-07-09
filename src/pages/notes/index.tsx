@@ -1,26 +1,23 @@
 import Layout from "@/app/components/ui/Layout";
 import { deleteNote, getAllNotes } from "@/app/server/notes";
-import { successToast } from "@/app/utils/toast";
 import { Note } from "@/app/utils/types";
 import {
   faPenNib,
-  faTrash,
   faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { Router, useRouter } from "next/router";
+import LoadingScreen from "@/app/components/ui/Loader";
 import React, { useEffect, useState } from "react";
 
 export default function Notes() {
-  const router = useRouter();
   const date = new Date();
   const [currentMonth, setCurrentMonth] = useState(date.getMonth());
   const [notes, setNotes] = useState<Note[]>([]);
   const [hoveredNoteId, setHoveredNoteId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const { data: session, status } = useSession();
 
   const fetchData = async () => {
@@ -93,9 +90,12 @@ export default function Notes() {
     if (!id) return null;
     setLoading(true)
     await deleteNote(id, session, status);
-    successToast("Note deleted successfully.");
     fetchData();
     setLoading(false)
+  }
+
+  if (isLoading) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -123,7 +123,7 @@ export default function Notes() {
               {notes.map((note) => (
                 <div
                   key={note.id}
-                  className="border border-notindigo-400 rounded-xl my-4 max-w-4xl mx-auto p-4 shadow text-lg list-disc transition-all relative hover:border-none hover:bg-notindigo-500 hover:text-xl hover:shadow-lg dark:text-black"
+                  className="dark:text-white border border-notindigo-400 rounded-xl my-4 w-4/5 md:max-w-4xl mx-auto p-4 shadow text-lg list-disc transition-all relative hover:border-none hover:bg-notindigo-500 hover:text-xl hover:shadow-lg hover:dark:text-black"
                   onMouseEnter={() => setHoveredNoteId(note.id)}
                   onMouseLeave={() => setHoveredNoteId("")}
                 >

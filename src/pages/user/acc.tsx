@@ -4,14 +4,20 @@ import Layout from "@/app/components/ui/Layout";
 import LoadingScreen from "@/app/components/ui/Loader";
 import { ToggleButton } from "@/app/components/ui/Toggle";
 import { deleteUserAccount } from "@/app/server/data";
-import { updateUserProfile, UserProfileUpdates } from "@/app/server/user";
+import {
+  getUser,
+  updateDarkMode,
+  updateUserProfile,
+  userPreferences,
+  UserProfileUpdates,
+} from "@/app/server/user";
 import { successToast, failToast, progressToast } from "@/app/utils/toast";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import router from "next/router";
 import React, { useEffect, useState } from "react";
 
-export default function acc() {
+export default function UserAccount() {
   const { data: session, status } = useSession();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -21,26 +27,50 @@ export default function acc() {
   const [tab, setTab] = useState("Account");
   const [helptab, setHelpTab] = useState("Introduction");
   const [loading, setLoading] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isEmails, setIsEmails] = useState(false)
+  const [userDetails, setUserDetails] = useState<userPreferences | null>(null);
 
   useEffect(() => {
-    if (!session && status === "unauthenticated") {
-      signIn();
+    setLoading(true);
+
+    if (status === "loading") {
+      return;
     }
 
-    setLoading(true);
+    if (!session && status === "unauthenticated") {
+      signIn();
+      setLoading(false);
+    }
+
     if (session && status) {
+      fetchUserAndSetState(session.user.id);
       if (
         typeof session.user.username === "string" &&
-        typeof session.user.email === "string"
+        typeof session.user.email === "string" &&
+        userDetails
       ) {
         setUsername(session.user.username);
         setEmail(session.user.email);
+        setIsDarkMode(userDetails.darkMode);
+        setIsEmails(userDetails.optInEmails);
       }
     }
     setLoading(false);
   }, [session, status]);
 
-  const userId = session?.user.id;
+  const fetchUserAndSetState = async (id: string) => {
+    setLoading(true);
+
+    const user = await getUser(id, session, status)
+    if (!user) return;
+
+    setUserDetails(user)
+    if (!userDetails) {
+      return;
+    }
+    setLoading(false);
+  };
 
   const handleSignOut = async () => {
     try {
@@ -85,11 +115,25 @@ export default function acc() {
   };
 
   const handleDelete = async () => {
-    if (userId && deletion.length > 0) {
+    if (userDetails?.id && deletion.length > 0) {
       progressToast("Commencing deletion...");
-      await deleteUserAccount(userId, deletion, session, status);
+      await deleteUserAccount(userDetails.id, deletion, session, status);
       signOut();
       successToast("Your account was deleted.");
+    }
+  };
+
+  const handleThemeToggle = async (value: boolean) => {
+    if (value) {
+      setLoading(true);
+      await updateDarkMode(value, session, status);
+      setIsDarkMode(!value);
+      setLoading(false);
+    } else if (value === false) {
+      setLoading(true);
+      await updateDarkMode(value, session, status);
+      setIsDarkMode(!value);
+      setLoading(false);
     }
   };
 
@@ -139,7 +183,7 @@ export default function acc() {
             <li
               onClick={() => setTab("Account")}
               className={`acc-tabs ${
-                tab === "Account" ? "bg-grey-150 rounded" : "bg-white"
+                tab === "Account" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
               }`}
             >
               Account
@@ -147,7 +191,7 @@ export default function acc() {
             <li
               onClick={() => setTab("Preferences")}
               className={`acc-tabs ${
-                tab === "Preferences" ? "bg-grey-150 rounded" : "bg-white"
+                tab === "Preferences" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
               }`}
             >
               Preferences
@@ -155,7 +199,7 @@ export default function acc() {
             <li
               onClick={() => setTab("Actions")}
               className={`acc-tabs ${
-                tab === "Actions" ? "bg-grey-150 rounded" : "bg-white"
+                tab === "Actions" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
               }`}
             >
               Actions
@@ -163,12 +207,12 @@ export default function acc() {
             <li
               onClick={() => setTab("Help")}
               className={`acc-tabs ${
-                tab === "Help" ? "bg-grey-150 rounded" : "bg-white"
+                tab === "Help" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
               }`}
             >
               Help
             </li>
-            <li onClick={handleSignOut} className="acc-tabs hover:bg-red-500">
+            <li onClick={handleSignOut} className="acc-tabs hover:bg-red-500 dark:hover:bg-red-950">
               Signout
             </li>
           </ul>
@@ -209,7 +253,20 @@ export default function acc() {
                 User Preferences
               </h2>
               <section>
-                <ToggleButton />
+                <ToggleButton
+                  isOn={isDarkMode}
+                  handleToggle={(isDarkMode) => {
+                    handleThemeToggle(isDarkMode);
+                  }}
+                  label="Toggle Dark Mode"
+                />
+                <ToggleButton
+                  isOn={isDarkMode}
+                  handleToggle={(isDarkMode) => {
+                    handleThemeToggle(isDarkMode);
+                  }}
+                  label="Toggle Dark Mode"
+                />
               </section>
             </main>
           ) : tab === "Help" ? (

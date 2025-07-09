@@ -1,8 +1,8 @@
-export function toggleTheme(): void {
+export function toggleTheme(isDarkMode: boolean): void {
   if (typeof window === 'undefined') return;
 
   const htmlElement = document.documentElement;
-  if (htmlElement.classList.contains('dark')) {
+  if (isDarkMode) {
     htmlElement.classList.remove('dark');
     localStorage.setItem('theme', 'light');
   } else {

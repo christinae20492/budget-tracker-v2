@@ -20,9 +20,14 @@ declare module "next-auth" {
     user: {
       id: string;
       name?: string | null;
-      email?: string | null;
+      email: string;
       image?: string | null;
-      username?: string | null;
+      username: string;
+      darkMode: boolean,
+      currency: string,
+      isAdmin: boolean,
+      optInEmails: boolean,
+      language: string,
     };
   }
 
@@ -84,8 +89,7 @@ export const authOptions: AuthOptions = {
           return {
             id: user.id,
             name: user.username || user.email,
-            email: user.email,
-            username: user.username,
+            email: user.email
           } as NextAuthUser;
         } catch (error) {
           console.error("Error during credentials authorization:", error);
