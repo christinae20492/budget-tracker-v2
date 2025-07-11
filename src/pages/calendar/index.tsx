@@ -74,7 +74,6 @@ export default function ExpenseCalendar() {
 
   const getCategoryColor = (envelopeId: string, envelopes: Envelope[]) => {
     if (!envelopes || envelopes.length === 0) return;
-    console.log(envelopeId, envelopes)
     return (
       envelopes.find((env) => env.id === envelopeId)?.color || "#DA5151"
     );

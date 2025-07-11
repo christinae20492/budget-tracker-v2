@@ -34,32 +34,32 @@ export default function FloatingMenu() {
   useEffect(() => {
     getThemeSettings();
     toggleTheme(isDarkTheme)
-  }, [session, isDarkTheme]);
+  }, [session, status]);
   
   return (
     <div className="floating-menu">
       <Link href={"/user/acc"}>
       <span className="user-btn">
-      <FontAwesomeIcon icon={faUser} className="menu-icon scale-150 hover:text-gray-600"/>
+      <FontAwesomeIcon icon={faUser} className="menu-icon scale-150 hover:text-gray-600" title="Account"/>
       </span>
       </Link>
       <Link href={"/"}>
-        <FontAwesomeIcon icon={faHouse} className="menu-icon" />
+        <FontAwesomeIcon icon={faHouse} className="menu-icon" title="Home"/>
       </Link>
       <Link href={"/calendar"}>
-        <FontAwesomeIcon icon={faCalendar} className="menu-icon" />
+        <FontAwesomeIcon icon={faCalendar} className="menu-icon" title="Calendar"/>
       </Link>
       <Link href={"/monthly-summary"}>
-        <FontAwesomeIcon icon={faChartPie} className="menu-icon" />
+        <FontAwesomeIcon icon={faChartPie} className="menu-icon" title="Summary"/>
       </Link>
       <Link href={"/envelopes"}>
-        <FontAwesomeIcon icon={faEnvelope} className="menu-icon" />
+        <FontAwesomeIcon icon={faEnvelope} className="menu-icon" title="Envelopes"/>
       </Link>
       <Link href={"/edit"}>
-        <FontAwesomeIcon icon={faPenToSquare} className="menu-icon" />
+        <FontAwesomeIcon icon={faPenToSquare} className="menu-icon" title="Edit"/>
       </Link>
       <Link href={"/notes"}>
-        <FontAwesomeIcon icon={faBookBookmark} className="menu-icon" />
+        <FontAwesomeIcon icon={faBookBookmark} className="menu-icon" title="Notes"/>
       </Link>
     </div>
   );

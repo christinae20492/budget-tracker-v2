@@ -61,6 +61,7 @@ model User {
   darkMode    Boolean  @default(false)
   currency    String   @default("USD")
   language    String   @default("English")
+  type        String   @default("")
 
   session Session[]
 

@@ -1,4 +1,4 @@
-import { getMonthlyExpenditureDetails } from "@/app/utils/expenses";
+import { getMonthlyExpenditureDetails, SummaryDetails } from "@/app/utils/expenses";
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import SummaryDoughnutChart from "@/app/components/ui/DonutChart";

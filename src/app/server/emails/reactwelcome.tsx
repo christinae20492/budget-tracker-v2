@@ -14,12 +14,11 @@ import {
   Row,
 } from '@react-email/components';
 
-// Define props for the WelcomeEmail component
 interface WelcomeEmailProps {
-  username?: string | null; // Optional username for personalization
-  loginUrl: string;         // The URL for the user to log in
-  appName: string;          // Your application name, e.g., "Just A Bit"
-  helpCenterUrl?: string;   // Optional link to your help center/FAQ
+  username?: string | null;
+  loginUrl: string;     
+  appName: string;        
+  helpCenterUrl?: string; 
   socialMediaLinks?: {
     facebook?: string;
     twitter?: string;
@@ -27,12 +26,11 @@ interface WelcomeEmailProps {
   };
 }
 
-// Default values for props to prevent undefined errors during development/testing
 const defaultProps: WelcomeEmailProps = {
   username: 'Valued User',
   loginUrl: 'https://justabit.app/auth/login',
   appName: 'Just A Bit',
-  helpCenterUrl: 'https://your-app-domain.com/help',
+  helpCenterUrl: `https://justabit.app/acc?tab='Help'`,
 };
 
 export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
@@ -42,8 +40,6 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
   helpCenterUrl = defaultProps.helpCenterUrl,
   socialMediaLinks,
 }) => {
-  // Styles for the email (Tailwind-like approach via inline styles or utility classes)
-  // React Email handles inline styling and ensures compatibility across clients.
   const main = {
     backgroundColor: '#f6f9fc',
     fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
@@ -69,7 +65,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
   };
 
   const button = {
-    backgroundColor: '#6366F1', // Indigo-500 equivalent
+    backgroundColor: '#6366F1',
     borderRadius: '8px',
     color: '#ffffff',
     fontSize: '16px',
@@ -78,8 +74,8 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
     textAlign: 'center' as const,
     display: 'block',
     padding: '12px 24px',
-    width: 'fit-content', // Adjust width based on content
-    margin: '0 auto', // Center the button
+    width: 'fit-content',
+    margin: '0 auto',
   };
 
   const footer = {
@@ -115,8 +111,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
       <Body style={main}>
         <Container style={container}>
           <Section style={{ textAlign: 'center', marginBottom: '20px' }}>
-            {/* You can add your app logo here if you have one */}
-            {/* <Img src={`${loginUrl}/path/to/your/logo.png`} width="150" height="auto" alt={appName} /> */}
+            {/* logo */}
           </Section>
 
           <Text style={heading}>Welcome to {appName}!</Text>

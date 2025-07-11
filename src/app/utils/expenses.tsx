@@ -1,6 +1,7 @@
 import { Envelope, Expense, Income } from "./types";
 import { getAllEnvelopes } from "../server/envelopes";
 import { useSession } from "next-auth/react";
+import React, { useState } from "react";
 
 // ✅ Ensure the function always returns a string
 export function getFormattedDate(
@@ -59,6 +60,18 @@ export function calculateTotal(
   return data
     .filter((item) => item.date && isWithinPeriod(item.date, monthOffset))
     .reduce((total, item) => total + (item.amount || 0), 0);
+}
+
+export interface SummaryDetails {
+  incomeTotals: number;
+  expenseTotals: number;
+  spendingDifference: number;
+  spendingComparison: number;
+  highestEnvelope: string;
+  highestAmount: number;
+  frequentEnvelope: string;
+  highestSpendingLocation: string;
+  highestSpendingAmount: number;
 }
 
 export function getMonthlyExpenditureDetails(
@@ -125,7 +138,8 @@ export function getMonthlyExpenditureDetails(
   const mostSpentEnvelope = thisMonthExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
       if (expense.envelopeId) {
-        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + expense.amount;
+        acc[expense.envelopeId] =
+          (acc[expense.envelopeId] || 0) + expense.amount;
       }
       return acc;
     },
@@ -223,7 +237,8 @@ export function getYearlyExpenditureDetails(
   const mostSpentEnvelope = yearlyExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
       if (expense.envelopeId) {
-        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + expense.amount;
+        acc[expense.envelopeId] =
+          (acc[expense.envelopeId] || 0) + expense.amount;
       }
       return acc;
     },
@@ -252,7 +267,7 @@ export function getYearlyExpenditureDetails(
     highestAmount,
     frequentEnvelope,
     monthlyExpenses,
-    monthlyIncome
+    monthlyIncome,
   };
 }
 

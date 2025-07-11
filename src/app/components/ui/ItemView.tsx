@@ -11,6 +11,7 @@ import { getEnvelopeExpenses, updateEnvelope } from "@/app/server/envelopes";
 import { useSession } from "next-auth/react";
 import LoadingScreen from "./Loader";
 import { deleteExpense } from "@/app/server/expenses";
+import { ConfirmModal } from "./ConfirmModal";
 
 interface ItemViewProps {
   envelopeItem: any;
@@ -24,6 +25,8 @@ const ItemView: React.FC<ItemViewProps> = ({
   incomeItem,
 }) => {
   const [currentItemType, setCurrentItemType] = useState("");
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [expId, setExpId] = useState("");
   let [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgetValue, setBudgetValue] = useState<number>(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -95,14 +98,16 @@ const ItemView: React.FC<ItemViewProps> = ({
     return <LoadingScreen />;
   }
 
-  const handleDeleteExp = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this expense?"
-    );
-    if (!confirmed) return;
+  const handleClick = (id: string) =>{
+    setExpId(id);
+    setDeleteModalVisible(true);
+  } 
 
+  const handleDeleteExp = async () => {
     setLoading(true);
-    await deleteExpense(expenseItem.id, session, status);
+    await deleteExpense(expId, session, status);
+    setDeleteModalVisible(false);
+    fetchData()
     setLoading(false);
   };
 
@@ -125,6 +130,10 @@ const ItemView: React.FC<ItemViewProps> = ({
           income={incomeItem}
         />
       ) : (
+        <>
+        {deleteModalVisible && (
+          <ConfirmModal dialogue="Are you sure you'd like to delete this expense?" buttonOne="Delete" buttonTwo="Cancel" buttonOneAction={handleDeleteExp} buttonTwoAction={()=>setDeleteModalVisible(false)}/>
+        )}
         <div className="edit-envelope">
           <h1 className="header">Modify {envelopeItem?.title}</h1>
           <h2 className="header text-gray-600 text-center">
@@ -147,8 +156,9 @@ const ItemView: React.FC<ItemViewProps> = ({
               {expenses.map((expense) => (
                 <span>
                   <li key={expense.id} className="exp-inc-item">
-                    {expense.location} - ${expense.amount}
+                    {expense.location} - ${expense.amount} ({expense.date})
                   </li>
+                  <button className="button my-2 bg-red-900 text-white md:invisible" onClick={()=>{handleClick(expense.id)}}>Delete</button>
                 </span>
               ))}
             </ul>
@@ -158,6 +168,7 @@ const ItemView: React.FC<ItemViewProps> = ({
             </p>
           )}
         </div>
+        </>
       )}
     </div>
   );

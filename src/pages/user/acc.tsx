@@ -7,6 +7,7 @@ import { deleteUserAccount } from "@/app/server/data";
 import {
   getUser,
   updateDarkMode,
+  updateEmails,
   updateUserProfile,
   userPreferences,
   UserProfileUpdates,
@@ -25,10 +26,11 @@ export default function UserAccount() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletion, setDeletion] = useState("");
   const [tab, setTab] = useState("Account");
+  const [showTabs, setShowTabs] = useState(false);
   const [helptab, setHelpTab] = useState("Introduction");
   const [loading, setLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isEmails, setIsEmails] = useState(false)
+  const [isEmails, setIsEmails] = useState(false);
   const [userDetails, setUserDetails] = useState<userPreferences | null>(null);
 
   useEffect(() => {
@@ -47,13 +49,15 @@ export default function UserAccount() {
       fetchUserAndSetState(session.user.id);
       if (
         typeof session.user.username === "string" &&
-        typeof session.user.email === "string" &&
-        userDetails
+        typeof session.user.email === "string"
       ) {
+        console.log(session.user);
         setUsername(session.user.username);
         setEmail(session.user.email);
+        if (userDetails) {
         setIsDarkMode(userDetails.darkMode);
         setIsEmails(userDetails.optInEmails);
+        }
       }
     }
     setLoading(false);
@@ -62,10 +66,10 @@ export default function UserAccount() {
   const fetchUserAndSetState = async (id: string) => {
     setLoading(true);
 
-    const user = await getUser(id, session, status)
+    const user = await getUser(id, session, status);
     if (!user) return;
 
-    setUserDetails(user)
+    setUserDetails(user);
     if (!userDetails) {
       return;
     }
@@ -123,19 +127,40 @@ export default function UserAccount() {
     }
   };
 
-  const handleThemeToggle = async (value: boolean) => {
-    if (value) {
-      setLoading(true);
-      await updateDarkMode(value, session, status);
-      setIsDarkMode(!value);
-      setLoading(false);
-    } else if (value === false) {
-      setLoading(true);
-      await updateDarkMode(value, session, status);
-      setIsDarkMode(!value);
-      setLoading(false);
-    }
-  };
+const handleThemeToggle = async (value: boolean) => {
+  setLoading(true);
+  console.log("Attempting to set dark mode to:", value);
+  try {
+    const result = await updateDarkMode(value, session, status);
+    console.log(result)
+    if (!userDetails) return;
+    await fetchUserAndSetState(userDetails.id);
+    //successToast(`Theme updated to ${value ? 'dark' : 'light'} mode.`);
+    setIsDarkMode(result);
+  } catch (error) {
+    failToast("Failed to update theme preference.");
+    console.error("Theme update error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleEmailToggle = async (value: boolean) => {
+  setLoading(true);
+  console.log("Attempting to set emails mode to:", value);
+  try {
+    const result = await updateEmails(value, session, status);
+    if (!userDetails) return;
+    await fetchUserAndSetState(userDetails.id);
+    //successToast(`Emails updated to ${value ? 'refuse' : 'receive'}.`);
+    setIsEmails(result);
+  } catch (error) {
+    failToast("Failed to update email preference.");
+    console.error("Email update error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const deletionInput = () => {
     return (
@@ -178,12 +203,14 @@ export default function UserAccount() {
 
       <div className="xl:m-4 relative">
         <h1 className="header">Hello, {session?.user.username}</h1>
-        <aside className="md:inline hidden">
-          <ul className="flex flex-nowrap justify-center -mb-px border-b border-gray-200 cursor-pointer">
+        <aside className="md:inline md:overflow-auto overflow-x-scroll overflow-y-hidden">
+          <ul className="flex flex-nowrap justify-center -mb-px border-b border-gray-200 dark:border-gray-500 cursor-pointer">
             <li
               onClick={() => setTab("Account")}
               className={`acc-tabs ${
-                tab === "Account" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
+                tab === "Account"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
               }`}
             >
               Account
@@ -191,7 +218,9 @@ export default function UserAccount() {
             <li
               onClick={() => setTab("Preferences")}
               className={`acc-tabs ${
-                tab === "Preferences" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
+                tab === "Preferences"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
               }`}
             >
               Preferences
@@ -199,7 +228,9 @@ export default function UserAccount() {
             <li
               onClick={() => setTab("Actions")}
               className={`acc-tabs ${
-                tab === "Actions" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
+                tab === "Actions"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
               }`}
             >
               Actions
@@ -207,19 +238,24 @@ export default function UserAccount() {
             <li
               onClick={() => setTab("Help")}
               className={`acc-tabs ${
-                tab === "Help" ? "bg-grey-150 rounded dark:bg-black dark:text-white" : "bg-white dark:bg-grey-400"
+                tab === "Help"
+                  ? "bg-grey-150 rounded hover:bg-inherit dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
               }`}
             >
               Help
             </li>
-            <li onClick={handleSignOut} className="acc-tabs hover:bg-red-500 dark:hover:bg-red-950">
+            <li
+              onClick={handleSignOut}
+              className="acc-tabs hover:bg-red-500 dark:hover:bg-red-800"
+            >
               Signout
             </li>
           </ul>
         </aside>
         <div className="flex justify-center w-full">
           {tab === "Actions" ? (
-            <main className="md:w-4/5 text-center">
+            <main className="md:w-4/5 text-center dark:bg-grey-500">
               <section className="my-4 w-2/3 mx-auto">
                 <p>
                   We understand the sensitivity of your personal and financial
@@ -248,31 +284,105 @@ export default function UserAccount() {
               </button>
             </main>
           ) : tab === "Preferences" ? (
-            <main className="md:w-4/5">
+            <main className="md:w-4/5 dark:bg-grey-500">
               <h2 className="text-2xl font-semibold my-4 text-center">
                 User Preferences
               </h2>
-              <section>
-                <ToggleButton
-                  isOn={isDarkMode}
-                  handleToggle={(isDarkMode) => {
-                    handleThemeToggle(isDarkMode);
-                  }}
-                  label="Toggle Dark Mode"
-                />
-                <ToggleButton
-                  isOn={isDarkMode}
-                  handleToggle={(isDarkMode) => {
-                    handleThemeToggle(isDarkMode);
-                  }}
-                  label="Toggle Dark Mode"
-                />
+              <section className="mx-auto block md:w-2/3 w-full">
+                <div className="pref-div">
+                  <h3 className="block text-gray-800 dark:text-gray-100 text-lg font-semibold mb-3">
+                    Theme Preference:
+                  </h3>
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="theme-light"
+                        name="theme"
+                        value="light"
+                        checked={!isDarkMode}
+                        onChange={() => handleThemeToggle(false)}
+                        disabled={loading}
+                        className="radio-btn"
+                      />
+                      <label
+                        htmlFor="theme-light"
+                        className="radio-btn-label"
+                      >
+                        Light Mode
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="theme-dark"
+                        name="theme"
+                        value="dark"
+                        checked={isDarkMode}
+                        onChange={() => handleThemeToggle(true)}
+                        disabled={loading}
+                        className="radio-btn"
+                      />
+                      <label
+                        htmlFor="theme-dark"
+                        className="radio-btn-label"
+                      >
+                        Dark Mode
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div className="pref-div">
+                  <h3 className="block text-gray-800 dark:text-gray-100 text-lg font-semibold mb-3">
+                    Email Subscriptions:
+                  </h3>
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="email-subscribe"
+                        name="emails"
+                        value="subscribe"
+                        checked={isEmails}
+                        onChange={() => handleEmailToggle(true)}
+                        disabled={loading}
+                        className="form-radio h-5 w-5 text-green-600 border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-green-500 transition duration-150 ease-in-out cursor-pointer"
+                      />
+                      <label
+                        htmlFor="email-subscribe"
+                        className="radio-btn-label"
+                      >
+                        Yes, subscribe to optional emails
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="email-unsubscribe"
+                        name="emails"
+                        value="unsubscribe"
+                        checked={!isEmails}
+                        onChange={() => handleEmailToggle(false)}
+                        disabled={loading}
+                        className="form-radio h-5 w-5 text-red-600 border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-red-500 transition duration-150 ease-in-out cursor-pointer"
+                      />
+                      <label
+                        htmlFor="email-unsubscribe"
+                        className="radio-btn-label"
+                      >
+                        No, unsubscribe from optional emails
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </section>
             </main>
           ) : tab === "Help" ? (
-            <main className="grid grid-cols-4 grid-rows-10 md:w-full">
-              <aside className="md:inline hidden">
-                <ul className="flex flex-col justify-start">
+            <main className="grid md:grid-cols-4 grid-cols-1 grid-rows-[auto_1fr] md:grid-rows-10 md:w-full dark:bg-grey-500">
+              <aside className="md:inline block">
+                <ul className="flex md:flex-col md:row-span-7 row-span-1 md:overflow-auto overflow-x-scroll flex-row justify-start">
                   <li
                     className="help-tabs"
                     onClick={() => setHelpTab("Introduction")}
@@ -308,13 +418,13 @@ export default function UserAccount() {
                   </li>
                 </ul>
               </aside>
-              <section className="col-span-3 mt-4 px-8">
+              <section className="md:col-span-3 col-span-full mt-4 px-8">
                 <HelpPage currentTab={helptab} />
               </section>
             </main>
           ) : (
             <main className="md:w-4/5">
-              <section className="mb-8 p-6 bg-white rounded-lg shadow">
+              <section className="mb-8 p-6 bg-white dark:bg-grey-500 rounded-lg shadow">
                 <h2 className="text-2xl font-semibold mb-4 text-center">
                   Update Profile Details
                 </h2>
@@ -322,14 +432,14 @@ export default function UserAccount() {
                   <div className="mb-4">
                     <label
                       htmlFor="username"
-                      className="block text-gray-700 text-sm font-bold mb-2"
+                      className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
                     >
                       Username:
                     </label>
                     <input
                       type="text"
                       id="username"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      className="text-input"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       disabled={isProfileSaving}
@@ -338,14 +448,14 @@ export default function UserAccount() {
                   <div className="mb-6">
                     <label
                       htmlFor="email"
-                      className="block text-gray-700 text-sm font-bold mb-2"
+                      className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
                     >
                       Email:
                     </label>
                     <input
                       type="email"
                       id="email"
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                      className="text-input"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={isProfileSaving}
@@ -354,7 +464,7 @@ export default function UserAccount() {
                   <div className="text-center">
                     <button
                       type="submit"
-                      className="button bg-emerald-600 hover:bg-emerald-200"
+                      className="button bg-emerald-900 hover:bg-emerald-600"
                       disabled={isProfileSaving}
                     >
                       {isProfileSaving ? "Saving..." : "Save Profile"}

@@ -159,10 +159,6 @@ export const updateDarkMode = async (
     failToast("Please sign in to update your profile.");
     return false;
   }
-  if (!value) {
-    warnToast("No new value provided.");
-    return false;
-  }
 
   const payload = {"darkMode":value}
 
@@ -177,7 +173,7 @@ export const updateDarkMode = async (
 
     if (response.ok) {
       //successToast(result.message || "Theme updated successfully!");
-      return true;
+      return result.darkMode;
     } else {
       failToast(result.message || "Failed to change theme.");
       return false;
@@ -202,10 +198,6 @@ export const updateEmails = async (
     failToast("Please sign in to update your profile.");
     return false;
   }
-  if (!value) {
-    warnToast("No new value provided.");
-    return false;
-  }
 
   const payload = {"optInEmails":value}
 
@@ -220,7 +212,7 @@ export const updateEmails = async (
 
     if (response.ok) {
       //successToast(result.message || "Theme updated successfully!");
-      return true;
+      return result.optInEmails;
     } else {
       failToast(result.message || "Failed to change email settings.");
       return false;

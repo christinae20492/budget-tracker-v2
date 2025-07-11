@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Layout from "@/app/components/ui/Layout";
-import { getMonthlyExpenditureDetails, totalSpend } from "@/app/utils/expenses";
+import { getMonthlyExpenditureDetails, SummaryDetails, totalSpend } from "@/app/utils/expenses";
 import { filterCurrentMonthExpenses } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
 import Link from "next/link";
@@ -13,18 +13,6 @@ import { useSession } from "next-auth/react";
 import { getAllData } from "@/app/server/data";
 import { getEnvelopeExpenses } from "@/app/server/envelopes";
 import React from "react";
-
-interface SummaryDetails {
-  incomeTotals: number;
-  expenseTotals: number;
-  spendingDifference: number;
-  spendingComparison: number;
-  highestEnvelope: string;
-  highestAmount: number;
-  frequentEnvelope: string;
-  highestSpendingLocation: string;
-  highestSpendingAmount: number;
-}
 
 export default function MonthlySummary() {
   const [summary, setSummary] = useState<SummaryDetails | null>(null);
