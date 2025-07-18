@@ -43,10 +43,10 @@ export default async function handler(
         });
         return res.status(200).json(getExpenses);
       } catch (error) {
-        console.error("API: Error fetching notes:", error);
+        console.error("API: Error fetching expenses:", error);
         return res
           .status(500)
-          .json({ message: "Internal server error while fetching notes." });
+          .json({ message: "Internal server error while fetching expenses." });
       }
 
     case "POST":

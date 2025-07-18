@@ -1,13 +1,14 @@
 "use client";
-import { useState } from "react";
-import { failToast, successToast } from "@/app/utils/toast";
+import { useEffect, useState } from "react";
+import { failToast, successToast, warnToast } from "@/app/utils/toast";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Layout from "@/app/components/ui/Layout";
 import { Note } from "@/app/utils/types";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { createNote } from "@/app/server/notes";
 import LoadingScreen from "@/app/components/ui/Loader";
+import React from "react";
 
 export default function CreateNote() {
   const router = useRouter();
@@ -16,6 +17,21 @@ export default function CreateNote() {
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
   const { data: session, status } = useSession();
+
+    useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

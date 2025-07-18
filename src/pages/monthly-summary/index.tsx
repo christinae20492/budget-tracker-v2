@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Layout from "@/app/components/ui/Layout";
-import { getMonthlyExpenditureDetails, SummaryDetails, totalSpend } from "@/app/utils/expenses";
+import {
+  calculateIncomeAllocations,
+  getMonthlyExpenditureDetails,
+  incomeDetails,
+  SummaryDetails,
+  totalSpend,
+} from "@/app/utils/expenses";
 import { filterCurrentMonthExpenses } from "@/app/utils/expenses";
 import { warnToast } from "@/app/utils/toast";
 import Link from "next/link";
 import LoadingScreen from "@/app/components/ui/Loader";
 import Head from "next/head";
 import { Envelope, Expense, Income } from "@/app/utils/types";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { getAllData } from "@/app/server/data";
 import { getEnvelopeExpenses } from "@/app/server/envelopes";
 import React from "react";
@@ -20,21 +26,31 @@ export default function MonthlySummary() {
 
   const [currentExpenses, setCurrentExpenses] = useState<Expense[]>([]);
   const [currentIncomes, setCurrentIncomes] = useState<Income[]>([]);
+  const [incDetails, setIncDetails] = useState<incomeDetails | null>(null)
   const [currentEnvelopes, setCurrentEnvelopes] = useState<Envelope[]>([]);
   const [loading, setLoading] = useState(false);
   const { data: session, status } = useSession();
 
   const [triggeredEnvelopes, setTriggeredEnvelopes] = useState(new Set());
 
+    useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
+
   const summaryDetails = (inc: Income[], exp: Expense[]) => {
-    if (
-      exp.length > 0 &&
-      inc.length > 0
-    ) {
-      const details = getMonthlyExpenditureDetails(
-        inc,
-        exp
-      );
+    if (exp.length > 0 && inc.length > 0) {
+      const details = getMonthlyExpenditureDetails(inc, exp);
       setSummary(details);
     }
   };
@@ -75,6 +91,7 @@ export default function MonthlySummary() {
     setCurrentEnvelopes(finalEnvelopes);
 
     summaryDetails(rawIncomes, rawExpenses);
+    setIncDetails(calculateIncomeAllocations(rawIncomes, false));
 
     setIsLoading(false);
   };
@@ -117,7 +134,7 @@ export default function MonthlySummary() {
     }
   }, [currentEnvelopes, triggeredEnvelopes]);
 
-    const getEnvelopeTitle = (envelopeId: any) => {
+  const getEnvelopeTitle = (envelopeId: any) => {
     const envelope = currentEnvelopes.find((env) => env.id === envelopeId);
     return envelope ? envelope.title : "Unknown Envelope";
   };
@@ -147,16 +164,24 @@ export default function MonthlySummary() {
           Net Savings: ${summary?.spendingDifference.toFixed(2) ?? 0}
         </p>
         <p className="my-2">
+          Savings: ${incDetails?.totalSavings.toFixed(2) ?? 0}
+        </p>
+        <p className="my-2">
+          Investments: ${incDetails?.totalInvestments.toFixed(2) ?? 0}
+        </p>
+        <p className="my-2">
           Spending Compared to Last Month: $
           {summary?.spendingComparison.toFixed(2) ?? 0}
         </p>
 
         <p className="my-2">
-          Category with Highest Spending: {getEnvelopeTitle(summary?.highestEnvelope)} with $
+          Category with Highest Spending:{" "}
+          {getEnvelopeTitle(summary?.highestEnvelope)} with $
           {summary?.highestAmount.toFixed(2)}
         </p>
         <p className="my-2">
-          Most Frequent Purchases Category: {getEnvelopeTitle(summary?.frequentEnvelope)}
+          Most Frequent Purchases Category:{" "}
+          {getEnvelopeTitle(summary?.frequentEnvelope)}
         </p>
         <p className="my-2">
           Location w Highest Spending: {summary?.highestSpendingLocation} with $

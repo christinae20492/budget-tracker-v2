@@ -6,8 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { failToast, successToast, warnToast } from "@/app/utils/toast";
 import Head from "next/head";
 import Layout from "@/app/components/ui/Layout";
-import { addExpenseToEnvelope, createExpense } from "@/app/server/expenses";
-import { useSession } from "next-auth/react";
+import { addExpenseToEnvelope, createExpense, getAllExpenses, getExpense } from "@/app/server/expenses";
+import { signIn, useSession } from "next-auth/react";
 import { getAllEnvelopes } from "@/app/server/envelopes";
 import { Envelope, Expense } from "@/app/utils/types";
 import LoadingScreen from "@/app/components/ui/Loader";
@@ -24,7 +24,8 @@ export default function AddExpenses() {
   const initialDate = selectedDate || new Date().toISOString().split("T")[0];
 
   const [loading, setLoading] = useState(false);
-  const [loadedExp, setLoadedExp] = useState<Expense | null>(null)
+  const [loadedExp, setLoadedExp] = useState<Expense[]>([]);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   const [location, setLocation] = useState("");
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
@@ -35,13 +36,32 @@ export default function AddExpenses() {
 
   const { data: session, status } = useSession();
 
+  useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
+
   const fetchData = async () => {
     setLoading(true);
     const storedEnvelopes = await getAllEnvelopes(session, status);
+    const storedExpenses = await getAllExpenses(session, status);
     if (!storedEnvelopes) return null;
     setEnvelopes(storedEnvelopes);
     if (storedEnvelopes.length > 0) {
       setEnvelope(storedEnvelopes[0].id);
+    }
+    if (storedExpenses) {
+    setLoadedExp(getRecurringExpenses(storedExpenses))
     }
     setLoading(false);
   };
@@ -56,6 +76,49 @@ export default function AddExpenses() {
     }
   }, [envelopes]);
 
+  const getRecurringExpenses = (expenses: Expense[]) =>{
+    const occurrenceMap = new Map<string, number>();
+  const recurringExpensesMap = new Map<string, Expense[]>();
+
+  expenses.forEach((expense) => {
+
+    const key = `${expense.location.toLowerCase()}|||${expense.amount}`;
+
+    occurrenceMap.set(key, (occurrenceMap.get(key) || 0) + 1);
+
+    if (!recurringExpensesMap.has(key)) {
+      recurringExpensesMap.set(key, []);
+    }
+    recurringExpensesMap.get(key)?.push(expense);
+  });
+
+  const recurringList: Expense[] = [];
+
+  occurrenceMap.forEach((count, key) => {
+    if (count > 1) {
+      const expensesForKey = recurringExpensesMap.get(key);
+      if (expensesForKey) {
+        recurringList.push(...expensesForKey);
+      }
+    }
+  });
+
+   const uniqueRecurring = Array.from(new Set(recurringList.map(exp => `${exp.location}|||${exp.amount}`)))
+    .map(key => recurringExpensesMap.get(key)?.[0])
+     .filter(Boolean) as Expense[];
+  return uniqueRecurring;
+  }
+
+  const loadExpense = async (id:string) =>{
+    const foundExp = await getExpense(id, session, status);
+    if (foundExp) {
+      setLocation(foundExp.location);
+      setEnvelope(foundExp.envelopeId);
+      let string = foundExp.amount.toString();
+      setAmount(string);
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,8 +131,6 @@ export default function AddExpenses() {
       warnToast("Please fill in all required fields.");
       return;
     }
-
-    console.log(envelope);
 
     setLoading(true);
 
@@ -96,8 +157,6 @@ export default function AddExpenses() {
     }
     successToast(`Expense for ${date} added successfully`);
   };
-
-  //<span className="p-3 rounded-r-md bg-blue-950 text-white hover:bg-blue-800 dark:bg-blue-dark"><FontAwesomeIcon icon={faSquareCaretDown} /></span>
 
   if (loading) {
     return <LoadingScreen />;
@@ -224,6 +283,33 @@ export default function AddExpenses() {
             >
               Add Expense
             </button>
+          </div>
+          <div className="relative inline-block">
+            <button className="button" onClick={()=>setIsDropdownVisible(!isDropdownVisible)}>
+              Load Expense
+            </button>
+            {isDropdownVisible && (
+              <div className="top-full left-0 mt-4 w-full">
+                <label
+              htmlFor="loadexpense"
+              className="block text-sm font-medium text-gray-700 dark:text-white"
+            >
+              Recurring Expenses<span className="text-red-500">*</span>
+            </label>
+            <select
+              id="exp"
+              onChange={(e) => loadExpense(e.target.value)}
+              required
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-slate-900 dark:text-white"
+            >
+              {loadedExp.map((exp) => (
+                <option key={exp.id} value={exp.id}>
+                  {exp.location} / ${exp.amount}
+                </option>
+              ))}
+            </select>
+              </div>
+            )}
           </div>
         </form>
       </div>

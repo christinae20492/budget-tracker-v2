@@ -6,8 +6,10 @@ import Head from "next/head";
 import { useSearchParams } from "next/navigation";
 import Layout from "@/app/components/ui/Layout";
 import { createNewIncome } from "@/app/server/incomes";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { successToast, warnToast } from "@/app/utils/toast";
+import LoadingScreen from "@/app/components/ui/Loader";
+import React from "react";
 
 export default function AddIncome() {
   const router = useRouter();
@@ -23,6 +25,21 @@ export default function AddIncome() {
   const [savings, setSavings] = useState(0);
   const [investments, setInvestments] = useState(0);
   const [remainder, setRemainder] = useState(0);
+
+  useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
 
   useEffect(() => {
     const totalDeductions = savings + investments;
@@ -57,6 +74,10 @@ export default function AddIncome() {
       warnToast("Total deductions cannot exceed the total income.");
     }
   };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <Layout>

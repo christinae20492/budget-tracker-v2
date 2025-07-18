@@ -6,10 +6,8 @@ import NextAuth, {
   Session,
   JWT,
 } from "next-auth";
-
 import type { CallbacksOptions } from "next-auth";
 import type { AdapterUser } from "next-auth/adapters";
-
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/app/prisma";
@@ -23,18 +21,18 @@ declare module "next-auth" {
       email: string;
       image?: string | null;
       username: string;
-      darkMode: boolean,
-      currency: string,
-      isAdmin: boolean,
-      optInEmails: boolean,
-      language: string,
+      darkMode: boolean;
+      currency: string;
+      isAdmin: boolean;
+      optInEmails: boolean;
+      language: string;
     };
   }
-
   interface JWT {
     id?: string;
     username?: string | null;
     email?: string | null;
+    isAdmin?: boolean;
   }
 }
 
@@ -56,13 +54,10 @@ export const authOptions: AuthOptions = {
           console.log("No username/email or password provided for credentials login.");
           return null;
         }
-
         const usernameOrEmail = String(credentials.usernameOrEmail).toLowerCase();
         const password = String(credentials.password);
-
         try {
-          let user: Awaited<ReturnType<typeof prisma.user.findUnique>> | null = null;
-
+          let user = null;
           if (usernameOrEmail.includes('@')) {
             user = await prisma.user.findUnique({
               where: { email: usernameOrEmail },
@@ -72,24 +67,20 @@ export const authOptions: AuthOptions = {
               where: { username: usernameOrEmail },
             });
           }
-
           if (!user || !user.password) {
             console.log("No user found with that username/email, or password not set.");
             return null;
           }
-
           const isValidPassword = await bcryptjs.compare(password, user.password);
-
           if (!isValidPassword) {
             console.log("Invalid password for user:", usernameOrEmail);
             return null;
           }
-
           console.log("User authenticated successfully:", user.email);
           return {
             id: user.id,
             name: user.username || user.email,
-            email: user.email
+            email: user.email,
           } as NextAuthUser;
         } catch (error) {
           console.error("Error during credentials authorization:", error);
@@ -102,29 +93,26 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt(params: Parameters<CallbacksOptions["jwt"]>[0]) {
-      const { token, user, account, profile, trigger, isNewUser, session } = params;
-
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.username = (user as any).username || user.name || null;
+        token.email = user.email || null;
 
-        if ('username' in user && user.username !== undefined) {
-             token.username = user.username;
-        } else if (user.name) {
-            token.username = user.name;
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { isAdmin: true },
+          });
+          token.isAdmin = dbUser?.isAdmin ?? false;
+        } catch (error) {
+          console.error("Error fetching isAdmin:", error);
+          token.isAdmin = false;
         }
-        token.email = user.email;
       }
-
-      if (trigger === "update" && session?.user?.username) {
-        token.username = session.user.username;
-      }
-
       return token;
     },
-    async session(params: Parameters<CallbacksOptions["session"]>[0]) {
-      const { session, token, user } = params;
-
+    async session({ session, token }) {
       if (token.id) {
         session.user.id = token.id as string;
       }
@@ -133,6 +121,9 @@ export const authOptions: AuthOptions = {
       }
       if (token.email) {
         session.user.email = token.email as string;
+      }
+      if (token.isAdmin) {
+      session.user.isAdmin = token.isAdmin as boolean;
       }
       return session;
     },

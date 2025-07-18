@@ -41,7 +41,6 @@ export default function Index() {
     }
 
     if (status === "unauthenticated") {
-      sleep(2500);
       warnToast("Please login to access this page.");
       signIn();
     }

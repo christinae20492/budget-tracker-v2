@@ -74,10 +74,116 @@ export interface SummaryDetails {
   highestSpendingAmount: number;
 }
 
-export function getMonthlyExpenditureDetails(
+export const getWeeklyExpenditureDetails=(
   incomes: Income[],
   expenses: Expense[]
-) {
+)=>{
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
+
+  const filterByLast7Days = (data: (Income | Expense)[]) =>
+    data.filter((item) => {
+      try {
+        const itemDate = new Date(item.date);
+        return itemDate >= sevenDaysAgo && itemDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      } catch (e) {
+        console.warn(`Invalid date format for item ID ${item.id}: ${item.date}. Skipping.`);
+        return false;
+      }
+    });
+
+  const thisWeekExpenses = filterByLast7Days(expenses) as Expense[];
+  const thisWeekIncomes = filterByLast7Days(incomes) as Income[];
+
+  const totalSpendingThisWeek = thisWeekExpenses.reduce(
+    (sum, expense) => sum + (expense.amount || 0),
+    0
+  );
+  const totalIncomeThisWeek = thisWeekIncomes.reduce(
+    (sum, income) => sum + (income.amount || 0),
+    0
+  );
+
+  const spendingDifference = totalIncomeThisWeek - totalSpendingThisWeek;
+
+  const mostSpentEnvelope = thisWeekExpenses.reduce<Record<string, number>>(
+    (acc, expense) => {
+      if (expense.envelopeId) {
+        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + expense.amount;
+      }
+      return acc;
+    },
+    {}
+  );
+  const [highestEnvelope, highestAmount] =
+    Object.entries(mostSpentEnvelope).sort((a, b) => b[1] - a[1])[0] || [];
+
+  const mostFrequentEnvelope = thisWeekExpenses.reduce<Record<string, number>>(
+    (acc, expense) => {
+      if (expense.envelopeId) {
+        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + 1;
+      }
+      return acc;
+    },
+    {}
+  );
+  const [frequentEnvelope] =
+    Object.entries(mostFrequentEnvelope).sort((a, b) => b[1] - a[1])[0] || [];
+
+  const fourteenDaysAgo = new Date(today);
+  fourteenDaysAgo.setDate(today.getDate() - 13);
+
+  const lastWeekExpenses = expenses.filter((item) => {
+    try {
+      const itemDate = new Date(item.date);
+      return itemDate >= fourteenDaysAgo && itemDate < sevenDaysAgo;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const totalSpendingLastWeek = lastWeekExpenses.reduce(
+    (sum, expense) => sum + (expense.amount || 0),
+    0
+  );
+
+  const spendingComparison =
+    totalSpendingLastWeek === 0
+      ? 0
+      : ((totalSpendingThisWeek - totalSpendingLastWeek) / totalSpendingLastWeek) * 100;
+
+  const mostSpentLocation = thisWeekExpenses.reduce<Record<string, number>>(
+    (acc, expense) => {
+      if (expense.location) {
+        acc[expense.location] = (acc[expense.location] || 0) + expense.amount;
+      }
+      return acc;
+    },
+    {}
+  );
+  const [highestSpendingLocation, highestSpendingAmount] =
+    Object.entries(mostSpentLocation).sort((a, b) => b[1] - a[1])[0] || [];
+
+  return {
+    incomeTotals: totalIncomeThisWeek,
+    expenseTotals: totalSpendingThisWeek,
+    spendingDifference,
+    spendingComparison,
+    highestEnvelope: highestEnvelope || "N/A",
+    highestAmount: highestAmount || 0,
+    frequentEnvelope: frequentEnvelope || "N/A",
+    highestSpendingLocation: highestSpendingLocation || "N/A",
+    highestSpendingAmount: highestSpendingAmount || 0,
+  };
+}
+
+export const getMonthlyExpenditureDetails=(
+  incomes: Income[],
+  expenses: Expense[]
+)=>{
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -346,4 +452,56 @@ export function filterCurrentMonthExpenses(expenses: any[]) {
       return year === currentYear && month === currentMonth;
     }
   );
+}
+
+export interface incomeDetails {
+  totalSavings: number,
+  totalInvestments: number
+}
+
+export const calculateIncomeAllocations = (
+  incomes: Income[],
+  isYear: boolean
+)=> {
+  let filteredIncomes: Income[] = [];
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  if (isYear) {
+    filteredIncomes = incomes.filter((income) => {
+      try {
+        const incomeDate = new Date(income.date);
+        return incomeDate.getFullYear() === currentYear;
+      } catch (e) {
+        console.warn(`Invalid date format for income ID ${income.id}: ${income.date}. Skipping this income.`);
+        return false; 
+      }
+    });
+  } else {
+    filteredIncomes = incomes.filter((income) => {
+      try {
+        const incomeDate = new Date(income.date);
+        return (
+          incomeDate.getFullYear() === currentYear &&
+          incomeDate.getMonth() === currentMonth
+        );
+      } catch (e) {
+        console.warn(`Invalid date format for income ID ${income.id}: ${income.date}. Skipping this income.`);
+        return false;
+      }
+    });
+  }
+
+  const totalSavings = filteredIncomes.reduce(
+    (sum, income) => sum + (income.savings || 0),
+    0
+  );
+
+  const totalInvestments = filteredIncomes.reduce(
+    (sum, income) => sum + (income.investments || 0),
+    0
+  );
+
+  return { totalSavings, totalInvestments };
 }

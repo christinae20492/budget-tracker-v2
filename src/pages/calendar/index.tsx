@@ -7,10 +7,12 @@ import interactionPlugin from "@fullcalendar/interaction";
 import ToggleSwitch from "@/app/components/ui/ToggleSwitch";
 import Layout from "@/app/components/ui/Layout";
 import { getAllData } from "@/app/server/data";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
 import CalendarModal from "@/app/components/ui/CalendarModal";
 import { Envelope, Expense, Income } from "@/app/utils/types";
+import { warnToast } from "@/app/utils/toast";
+import React from "react";
 
 export default function ExpenseCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,9 +32,20 @@ export default function ExpenseCalendar() {
   const [loading, setLoading] = useState(false);
   type ViewType = "expenses" | "income" | "both";
 
-  const updateView = () => {
-    setCalendarView(window.innerWidth < 1000 ? "dayGridWeek" : "dayGridMonth");
-  };
+  useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
 
   const fetchData = async () => {
     const data = await getAllData(session, status);
@@ -46,9 +59,9 @@ export default function ExpenseCalendar() {
   };
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     fetchData();
-    setLoading(false)
+    setLoading(false);
   }, [session, status]);
 
   const handleDateClick = (info: any) => {
@@ -74,9 +87,7 @@ export default function ExpenseCalendar() {
 
   const getCategoryColor = (envelopeId: string, envelopes: Envelope[]) => {
     if (!envelopes || envelopes.length === 0) return;
-    return (
-      envelopes.find((env) => env.id === envelopeId)?.color || "#DA5151"
-    );
+    return envelopes.find((env) => env.id === envelopeId)?.color || "#DA5151";
   };
 
   const calendarEvents = useMemo(() => {

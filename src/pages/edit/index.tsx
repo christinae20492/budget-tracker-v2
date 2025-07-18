@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import DataManagement from "@/app/components/ui/DataButtons";
 import Head from "next/head";
 import { getAllData } from "@/app/server/data";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { Envelope, Expense, Income } from "@/app/utils/types";
 import LoadingScreen from "@/app/components/ui/Loader";
+import { warnToast } from "@/app/utils/toast";
+import React from "react";
 
 export default function ManageExpenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -24,6 +26,21 @@ export default function ManageExpenses() {
   const { data: session, status } = useSession();
 
   const router = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -42,10 +59,6 @@ export default function ManageExpenses() {
   useEffect(() => {
     fetchData();
   }, [status]);
-
-  const updateExpenses = (updatedExpenses: Expense[]) => {
-    localStorage.setItem("expenses", JSON.stringify(updatedExpenses));
-  };
 
   const handleItemClick = (item: any) => {
     const params = item.id;

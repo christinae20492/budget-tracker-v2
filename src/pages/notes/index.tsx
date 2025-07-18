@@ -1,16 +1,14 @@
 import Layout from "@/app/components/ui/Layout";
 import { deleteNote, getAllNotes } from "@/app/server/notes";
 import { Note } from "@/app/utils/types";
-import {
-  faPenNib,
-  faTrashCan,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPenNib, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import LoadingScreen from "@/app/components/ui/Loader";
 import React, { useEffect, useState } from "react";
+import { warnToast } from "@/app/utils/toast";
 
 export default function Notes() {
   const date = new Date();
@@ -20,15 +18,30 @@ export default function Notes() {
   const [isLoading, setLoading] = useState(false);
   const { data: session, status } = useSession();
 
+  useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
+
   const fetchData = async () => {
-    setLoading(true)
+    setLoading(true);
     const rawNotes = await getAllNotes(session, status);
     if (!rawNotes) return;
     const filteredNotes = rawNotes.filter(
       (note) => note.month === currentMonth
     );
     setNotes(filteredNotes);
-    setLoading(false)
+    setLoading(false);
   };
 
   const increment = () => {
@@ -86,13 +99,13 @@ export default function Notes() {
     }
   }
 
-  const handleDelete = async(id: string)=>{
+  const handleDelete = async (id: string) => {
     if (!id) return null;
-    setLoading(true)
+    setLoading(true);
     await deleteNote(id, session, status);
     fetchData();
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   if (isLoading) {
     return <LoadingScreen />;

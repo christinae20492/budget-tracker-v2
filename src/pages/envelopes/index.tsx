@@ -14,13 +14,14 @@ import { warnToast } from "@/app/utils/toast";
 import Layout from "@/app/components/ui/Layout";
 import { faRectangleList } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import LoadingScreen from "@/app/components/ui/Loader";
 import { Expense, Envelope } from "@/app/utils/types";
 import { getAllData } from "@/app/server/data";
 import FocusedEnv from "@/app/components/ui/FocusedEnv";
 import AddEnvelope from "@/app/components/ui/AddEnvelope";
 import { getEnvelopeExpenses } from "@/app/server/envelopes";
+import React from "react";
 
 export default function EnvelopesPage() {
   const router = useRouter();
@@ -42,6 +43,21 @@ export default function EnvelopesPage() {
   const variableEnvelopes = envelopes.filter(
     (env: Envelope) => env.fixed === false
   );
+
+  useEffect(() => {
+    setLoading(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session) {
+      setLoading(false);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      warnToast("Please login to access this page.");
+      signIn();
+    }
+  }, [status, session]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -90,7 +106,7 @@ export default function EnvelopesPage() {
   }, [status]);
 
   useEffect(() => {
-    if (router.query.openEnvelopeModal === 'true') {
+    if (router.query.openEnvelopeModal === "true") {
       setAddEnvVisible(true);
 
       const { pathname, query } = router;
@@ -113,27 +129,27 @@ export default function EnvelopesPage() {
     await fetchData();
   };
 
-const calculateTotalSpentToday = () => {
-  const getFormattedDate = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = (today.getMonth() + 1).toString().padStart(2, '0');
-  const day = today.getDate().toString().padStart(2, '0');
+  const calculateTotalSpentToday = () => {
+    const getFormattedDate = () => {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = (today.getMonth() + 1).toString().padStart(2, "0");
+      const day = today.getDate().toString().padStart(2, "0");
 
-  return `${year}-${month}-${day}`;
-};
-  const todayFormatted = getFormattedDate();
-  console.log(todayFormatted)
+      return `${year}-${month}-${day}`;
+    };
+    const todayFormatted = getFormattedDate();
+    console.log(todayFormatted);
 
-  const total = filteredExpenses
-    .filter((expense) => {
-      const expenseDatePart = expense.date ? String(expense.date) : '';
-      return expenseDatePart === todayFormatted;
-    })
-    .reduce((currentTotal, expense) => currentTotal + expense.amount, 0);
+    const total = filteredExpenses
+      .filter((expense) => {
+        const expenseDatePart = expense.date ? String(expense.date) : "";
+        return expenseDatePart === todayFormatted;
+      })
+      .reduce((currentTotal, expense) => currentTotal + expense.amount, 0);
 
-  return total;
-};
+    return total;
+  };
 
   const goToDetails = (env: Envelope) => {
     setEnvId(env.id);
@@ -218,7 +234,7 @@ const calculateTotalSpentToday = () => {
         .reduce((total, expense) => total + expense.amount, 0);
       dailySpending.push({ date: day, total: dailyTotal });
     });
-    console.log(dailySpending)
+    console.log(dailySpending);
 
     return dailySpending;
   };

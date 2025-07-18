@@ -236,6 +236,16 @@ const handleEmailToggle = async (value: boolean) => {
               Actions
             </li>
             <li
+              onClick={() => setTab("Updates")}
+              className={`acc-tabs ${
+                tab === "Updates"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
+              }`}
+            >
+              Updates
+            </li>
+            <li
               onClick={() => setTab("Help")}
               className={`acc-tabs ${
                 tab === "Help"
@@ -282,6 +292,10 @@ const handleEmailToggle = async (value: boolean) => {
               <button className="button my-6" onClick={beginDelete}>
                 Delete Account
               </button>
+            </main>
+          ) : tab === "Updates" ? (
+            <main className="md:w-4/5 dark:bg-grey-500">
+              
             </main>
           ) : tab === "Preferences" ? (
             <main className="md:w-4/5 dark:bg-grey-500">

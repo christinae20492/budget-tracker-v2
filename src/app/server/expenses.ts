@@ -11,7 +11,7 @@ export const getAllExpenses = async (session: any, status: string): Promise<Expe
   }
 
   if (status === "unauthenticated") {
-    failToast("Please sign in to view your notes.");
+    failToast("Please sign in to view your expenses.");
     return;
   }
 
@@ -22,7 +22,7 @@ export const getAllExpenses = async (session: any, status: string): Promise<Expe
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to fetch notes.");
+      throw new Error(errorData.message || "Failed to fetch expenses.");
     }
 
     const data: Expense[] = await response.json();
@@ -31,6 +31,40 @@ export const getAllExpenses = async (session: any, status: string): Promise<Expe
   } catch (err: any) {
     console.error("Error fetching expenses:", err);
     failToast(err.message || "Error loading expenses.");
+    return undefined;
+  }
+};
+
+export const getExpense = async (id: string, session: any, status: string): Promise<Expense | undefined> => {
+  if (status === "loading") {
+    warnToast("Authentication status is still loading. Please wait.");
+    return;
+  }
+
+  if (status === "unauthenticated") {
+    failToast("Please sign in to view your notes.");
+    return;
+  }
+
+  if (!id) {
+    warnToast("You need an id to find an expense.")
+  }
+  try {
+    if (!session) return;
+    
+    const response = await fetch(`/api/expenses/${id}`);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch expense.");
+    }
+
+    const data: Expense = await response.json();
+    //successToast("Expense located successfully!");
+    return data;
+  } catch (err: any) {
+    console.error("Error fetching expense:", err);
+    failToast(err.message || "Error loading expense.");
     return undefined;
   }
 };
