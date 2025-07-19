@@ -284,7 +284,9 @@ export default function AddExpenses() {
               Add Expense
             </button>
           </div>
-          <div className="relative inline-block">
+
+          <div className="flex justify-center">
+          <div className="relative">
             <button className="button" onClick={()=>setIsDropdownVisible(!isDropdownVisible)}>
               Load Expense
             </button>
@@ -310,6 +312,7 @@ export default function AddExpenses() {
             </select>
               </div>
             )}
+          </div>
           </div>
         </form>
       </div>

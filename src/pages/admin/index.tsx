@@ -13,13 +13,13 @@ import LoadingScreen from "@/app/components/ui/Loader";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { User } from "@/generated/prisma/client";
-import { getWeeklyExpenditureDetails } from "@/app/utils/expenses";
+import { getWeeklyExpenditureDetails, totalSpend } from "@/app/utils/expenses";
 import { Expense, Income, Envelope } from "@/app/utils/types";
 
 interface envelopeObj {
-  name: string,
-  spent: string,
-  allocated: string,
+  name: string;
+  spent: string;
+  allocated: string;
 }
 
 export default function AdminUpdateEmailSender() {
@@ -38,7 +38,7 @@ export default function AdminUpdateEmailSender() {
   const [userIncomes, setUserIncomes] = useState<Income[]>([]);
   const [userExpenses, setUserExpenses] = useState<Expense[]>([]);
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
-  const [userEnvelopeData, setUserEnvelopeData] = useState<envelopeObj | null>(null)
+  const [userEnvelopeData, setUserEnvelopeData] = useState<envelopeObj[]>([]);
   const [isFetchingFinancialData, setIsFetchingFinancialData] = useState(false);
 
   const [startDate, setStartDate] = useState<string>("");
@@ -60,7 +60,6 @@ export default function AdminUpdateEmailSender() {
       warnToast("You are not authorized to access this page.");
       router.push("/");
     }
-
   }, [session, status, router]);
 
   useEffect(() => {
@@ -80,7 +79,6 @@ export default function AdminUpdateEmailSender() {
     setLoading(true);
     fetchUsers();
     setLoading(false);
-
   }, [session, status]);
 
   useEffect(() => {
@@ -105,7 +103,7 @@ export default function AdminUpdateEmailSender() {
           const { incomes, expenses, envelopes } = await response.json();
           setUserIncomes(incomes);
           setUserExpenses(expenses);
-          setEnvelopes(envelopes)
+          setEnvelopes(envelopes);
 
           const weeklyDetails = getWeeklyExpenditureDetails(incomes, expenses);
 
@@ -114,15 +112,22 @@ export default function AdminUpdateEmailSender() {
           setRemainingBudget(weeklyDetails.spendingDifference);
 
           const getEnvelopeTitle = (envelopeId: string): string => {
-            const envelope = envelopes.find((env: Envelope) => env.id === envelopeId);
+            const envelope = envelopes.find(
+              (env: Envelope) => env.id === envelopeId
+            );
             return envelope ? envelope.title : "Unknown Envelope";
           };
 
           const getEnvelopeData = (envelopeId: string) => {
-            const envelope = envelopes.find((env: Envelope) => env.id === envelopeId);
-            if (envelope) {
-              return envelope
-            }
+            const envelope = envelopes.find(
+              (env: Envelope) => env.id === envelopeId
+            );
+
+              userEnvelopeData.push({
+                name: envelope.title ? envelope.title : 'n/a',
+                spent: totalSpend(envelope, "weekly").toString(),
+                allocated: envelope.budget ? envelope.budget.toString() : '0',
+              });
           };
 
           const formattedTopCategories = weeklyDetails.frequentEnvelope
@@ -130,6 +135,7 @@ export default function AdminUpdateEmailSender() {
             : "";
 
           setTopCategories(getEnvelopeTitle(formattedTopCategories));
+          getEnvelopeData(formattedTopCategories);
 
           const now = new Date();
           const today = new Date(
@@ -209,6 +215,33 @@ export default function AdminUpdateEmailSender() {
     }
   };
 
+    const handleSendEmailtoAll = async () => {
+    setLoading(true);
+    try {
+
+      progressToast("Sending emails to all users...");
+
+      const response = await fetch("/api/email/urgent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        successToast(result.message || "Emails sent successfully!");
+      } else {
+        failToast(result.message || "Failed to send emails.");
+      }
+    } catch (error) {
+      failToast("Invalid JSON or network error.");
+      console.error("Send emails error:", error);
+    } finally {
+      setLoading(false);
+      setConfirm(false);
+    }
+  };
+
   const handleSendWeeklyBudgetUpdate = async () => {
     if (!selectedUserId || !startDate || !endDate) {
       setStatusMessage("Please select a user and ensure dates are populated.");
@@ -221,7 +254,7 @@ export default function AdminUpdateEmailSender() {
     const parsedTopCategories = topCategories
       .split(",")
       .map((s) => s.trim())
-      .filter(Boolean) 
+      .filter(Boolean)
       .map((name) => ({ name, amount: 0 }));
 
     try {
@@ -237,7 +270,7 @@ export default function AdminUpdateEmailSender() {
           totalIncome,
           totalExpenses,
           remainingBudget,
-          topCategories: parsedTopCategories,
+          envelopesSummary: userEnvelopeData,
         }),
       });
 
@@ -276,6 +309,15 @@ export default function AdminUpdateEmailSender() {
           buttonTwoAction={() => setConfirm(false)}
         />
       )}
+
+      <div className="text-center">
+        <h1 className="header">Send Email to All</h1>
+        <p className="text-center text-grey-500">**Sends whatever email is currently allocated to the <span className="font-semibold">urgent.ts</span> api endpoint. Will be sent to all users</p>
+        <button onClick={handleSendEmailtoAll}
+        className="button">
+          Send Email to All
+        </button>
+      </div>
 
       <div className="max-w-xl mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded shadow">
         <h1 className="header text-center mb-6">

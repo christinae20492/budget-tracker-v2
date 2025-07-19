@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/app/prisma';
 import { Resend } from 'resend';
-import { NewFeaturesEmail } from '@/app/server/emails/appupdate';
 import React from 'react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
+import EmailServiceAlert from '@/app/server/emails/emailservice';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -21,16 +21,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { updateTitle, featuresList, dashboardUrl } = req.body;
-    if (!updateTitle || !featuresList || !dashboardUrl) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
 
     const users = await prisma.user.findMany({
       select: { id: true, email: true, username: true },
     });
-
-    const appName = process.env.NEXT_PUBLIC_APP_NAME || 'MyApp';
 
         const recipientEmails = users
       .map(user => user.email)
@@ -41,14 +35,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
       await resend.emails.send({
-        from: `"${appName} Updates" <updates@${process.env.RESEND_DOMAIN}>`,
+        from: `"Just A Bit" <noreply@justabit.app>`,
         to: recipientEmails,
-        subject: updateTitle,
-        react: React.createElement(NewFeaturesEmail, {
+        subject: "New Email Service",
+        react: React.createElement(EmailServiceAlert, {
           username: 'Valued User',
-          appName,
-          updateTitle,
-          featuresList,
         }),
       });
 

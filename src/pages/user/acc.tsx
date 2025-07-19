@@ -1,3 +1,4 @@
+import Changelog from "@/app/components/ui/Changelog";
 import { ConfirmModal } from "@/app/components/ui/ConfirmModal";
 import HelpPage from "@/app/components/ui/HelpPage";
 import Layout from "@/app/components/ui/Layout";
@@ -55,8 +56,8 @@ export default function UserAccount() {
         setUsername(session.user.username);
         setEmail(session.user.email);
         if (userDetails) {
-        setIsDarkMode(userDetails.darkMode);
-        setIsEmails(userDetails.optInEmails);
+          setIsDarkMode(userDetails.darkMode);
+          setIsEmails(userDetails.optInEmails);
         }
       }
     }
@@ -127,40 +128,40 @@ export default function UserAccount() {
     }
   };
 
-const handleThemeToggle = async (value: boolean) => {
-  setLoading(true);
-  console.log("Attempting to set dark mode to:", value);
-  try {
-    const result = await updateDarkMode(value, session, status);
-    console.log(result)
-    if (!userDetails) return;
-    await fetchUserAndSetState(userDetails.id);
-    //successToast(`Theme updated to ${value ? 'dark' : 'light'} mode.`);
-    setIsDarkMode(result);
-  } catch (error) {
-    failToast("Failed to update theme preference.");
-    console.error("Theme update error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleThemeToggle = async (value: boolean) => {
+    setLoading(true);
+    console.log("Attempting to set dark mode to:", value);
+    try {
+      const result = await updateDarkMode(value, session, status);
+      console.log(result);
+      if (!userDetails) return;
+      await fetchUserAndSetState(userDetails.id);
+      //successToast(`Theme updated to ${value ? 'dark' : 'light'} mode.`);
+      setIsDarkMode(result);
+    } catch (error) {
+      failToast("Failed to update theme preference.");
+      console.error("Theme update error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const handleEmailToggle = async (value: boolean) => {
-  setLoading(true);
-  console.log("Attempting to set emails mode to:", value);
-  try {
-    const result = await updateEmails(value, session, status);
-    if (!userDetails) return;
-    await fetchUserAndSetState(userDetails.id);
-    //successToast(`Emails updated to ${value ? 'refuse' : 'receive'}.`);
-    setIsEmails(result);
-  } catch (error) {
-    failToast("Failed to update email preference.");
-    console.error("Email update error:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleEmailToggle = async (value: boolean) => {
+    setLoading(true);
+    console.log("Attempting to set emails mode to:", value);
+    try {
+      const result = await updateEmails(value, session, status);
+      if (!userDetails) return;
+      await fetchUserAndSetState(userDetails.id);
+      //successToast(`Emails updated to ${value ? 'refuse' : 'receive'}.`);
+      setIsEmails(result);
+    } catch (error) {
+      failToast("Failed to update email preference.");
+      console.error("Email update error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const deletionInput = () => {
     return (
@@ -294,8 +295,13 @@ const handleEmailToggle = async (value: boolean) => {
               </button>
             </main>
           ) : tab === "Updates" ? (
-            <main className="md:w-4/5 dark:bg-grey-500">
-              
+            <main className="md:w-3/5 dark:bg-grey-500">
+              <p className="text-center text-grey-300">
+                **Emails can potentially be sent to your Spam/Junk folder. Keep
+                an eye out!
+              </p>
+
+              <Changelog />
             </main>
           ) : tab === "Preferences" ? (
             <main className="md:w-4/5 dark:bg-grey-500">
@@ -319,10 +325,7 @@ const handleEmailToggle = async (value: boolean) => {
                         disabled={loading}
                         className="radio-btn"
                       />
-                      <label
-                        htmlFor="theme-light"
-                        className="radio-btn-label"
-                      >
+                      <label htmlFor="theme-light" className="radio-btn-label">
                         Light Mode
                       </label>
                     </div>
@@ -338,10 +341,7 @@ const handleEmailToggle = async (value: boolean) => {
                         disabled={loading}
                         className="radio-btn"
                       />
-                      <label
-                        htmlFor="theme-dark"
-                        className="radio-btn-label"
-                      >
+                      <label htmlFor="theme-dark" className="radio-btn-label">
                         Dark Mode
                       </label>
                     </div>

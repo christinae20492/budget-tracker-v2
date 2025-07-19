@@ -74,10 +74,10 @@ export interface SummaryDetails {
   highestSpendingAmount: number;
 }
 
-export const getWeeklyExpenditureDetails=(
+export const getWeeklyExpenditureDetails = (
   incomes: Income[],
   expenses: Expense[]
-)=>{
+) => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -88,9 +88,14 @@ export const getWeeklyExpenditureDetails=(
     data.filter((item) => {
       try {
         const itemDate = new Date(item.date);
-        return itemDate >= sevenDaysAgo && itemDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        return (
+          itemDate >= sevenDaysAgo &&
+          itemDate < new Date(today.getTime() + 24 * 60 * 60 * 1000)
+        );
       } catch (e) {
-        console.warn(`Invalid date format for item ID ${item.id}: ${item.date}. Skipping.`);
+        console.warn(
+          `Invalid date format for item ID ${item.id}: ${item.date}. Skipping.`
+        );
         return false;
       }
     });
@@ -112,7 +117,8 @@ export const getWeeklyExpenditureDetails=(
   const mostSpentEnvelope = thisWeekExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
       if (expense.envelopeId) {
-        acc[expense.envelopeId] = (acc[expense.envelopeId] || 0) + expense.amount;
+        acc[expense.envelopeId] =
+          (acc[expense.envelopeId] || 0) + expense.amount;
       }
       return acc;
     },
@@ -153,7 +159,9 @@ export const getWeeklyExpenditureDetails=(
   const spendingComparison =
     totalSpendingLastWeek === 0
       ? 0
-      : ((totalSpendingThisWeek - totalSpendingLastWeek) / totalSpendingLastWeek) * 100;
+      : ((totalSpendingThisWeek - totalSpendingLastWeek) /
+          totalSpendingLastWeek) *
+        100;
 
   const mostSpentLocation = thisWeekExpenses.reduce<Record<string, number>>(
     (acc, expense) => {
@@ -178,12 +186,12 @@ export const getWeeklyExpenditureDetails=(
     highestSpendingLocation: highestSpendingLocation || "N/A",
     highestSpendingAmount: highestSpendingAmount || 0,
   };
-}
+};
 
-export const getMonthlyExpenditureDetails=(
+export const getMonthlyExpenditureDetails = (
   incomes: Income[],
   expenses: Expense[]
-)=>{
+) => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -298,7 +306,7 @@ export const getMonthlyExpenditureDetails=(
     highestSpendingLocation: highestSpendingLocation || "N/A",
     highestSpendingAmount: highestSpendingAmount || 0,
   };
-}
+};
 
 export function getYearlyExpenditureDetails(
   incomes: Income[],
@@ -383,11 +391,67 @@ export const getBudgetLimits = async (session: any, status: string) => {
   return envelopes.map((env) => ({ title: env.title, budget: env.budget }));
 };
 
-export const totalSpend = (envelope: Envelope) => {
+export const totalSpend = (
+  envelope: Envelope,
+  timeframe: string = "all"
+): number => {
   if (!envelope.expenses || envelope.expenses.length === 0) {
     return 0;
   }
-  return envelope.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  let filteredExpenses: Expense[] = [];
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  switch (timeframe) {
+    case "weekly":
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 6);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
+
+      filteredExpenses = envelope.expenses.filter((expense) => {
+        try {
+          const expenseDate = new Date(expense.date);
+          expenseDate.setHours(0, 0, 0, 0);
+          return expenseDate >= sevenDaysAgo && expenseDate <= today;
+        } catch (e) {
+          console.warn(
+            `Invalid date format for expense ID (weekly filter): ${expense.date}. Skipping.`
+          );
+          return false;
+        }
+      });
+      break;
+
+    case "monthly":
+      filteredExpenses = envelope.expenses.filter((expense) => {
+        try {
+          const expenseDate = new Date(expense.date);
+          return (
+            expenseDate.getFullYear() === currentYear &&
+            expenseDate.getMonth() === currentMonth
+          );
+        } catch (e) {
+          console.warn(
+            `Invalid date format for expense ID (monthly filter): ${expense.date}. Skipping.`
+          );
+          return false;
+        }
+      });
+      break;
+
+    case "all":
+    default:
+      filteredExpenses = envelope.expenses;
+      break;
+  }
+
+  return filteredExpenses.reduce(
+    (sum, expense) => sum + (expense.amount || 0),
+    0
+  );
 };
 
 export function filterEnvelopeExpenses(
@@ -455,14 +519,14 @@ export function filterCurrentMonthExpenses(expenses: any[]) {
 }
 
 export interface incomeDetails {
-  totalSavings: number,
-  totalInvestments: number
+  totalSavings: number;
+  totalInvestments: number;
 }
 
 export const calculateIncomeAllocations = (
   incomes: Income[],
   isYear: boolean
-)=> {
+) => {
   let filteredIncomes: Income[] = [];
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -474,8 +538,10 @@ export const calculateIncomeAllocations = (
         const incomeDate = new Date(income.date);
         return incomeDate.getFullYear() === currentYear;
       } catch (e) {
-        console.warn(`Invalid date format for income ID ${income.id}: ${income.date}. Skipping this income.`);
-        return false; 
+        console.warn(
+          `Invalid date format for income ID ${income.id}: ${income.date}. Skipping this income.`
+        );
+        return false;
       }
     });
   } else {
@@ -487,7 +553,9 @@ export const calculateIncomeAllocations = (
           incomeDate.getMonth() === currentMonth
         );
       } catch (e) {
-        console.warn(`Invalid date format for income ID ${income.id}: ${income.date}. Skipping this income.`);
+        console.warn(
+          `Invalid date format for income ID ${income.id}: ${income.date}. Skipping this income.`
+        );
         return false;
       }
     });
@@ -504,4 +572,4 @@ export const calculateIncomeAllocations = (
   );
 
   return { totalSavings, totalInvestments };
-}
+};
