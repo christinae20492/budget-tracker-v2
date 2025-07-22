@@ -21,8 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { updateTitle, featuresList, dashboardUrl } = req.body;
-    if (!updateTitle || !featuresList || !dashboardUrl) {
+    const { updateTitle, featuresList } = req.body;
+    if (!updateTitle || !featuresList) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
