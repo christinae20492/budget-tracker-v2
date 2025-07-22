@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/app/prisma';
 import { Resend } from 'resend';
-import WeeklyBudgetUpdateEmail from '@/app/server/emails/weeklyupdate';
 import React from 'react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
+import MonthlyBudgetUpdateEmail from '@/app/server/emails/monthlyupdate';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -22,9 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { userId, startDate, endDate, totalIncome, totalExpenses, netBalance, envelopesSummary } = req.body;
-    if (!startDate || !endDate || !totalIncome || !totalExpenses || !netBalance || !envelopesSummary ) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
+ 
 
     const user = await prisma.user.findUnique({
       where: {
@@ -44,16 +42,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const appName = process.env.NEXT_PUBLIC_APP_NAME || 'MyApp';
 
       await resend.emails.send({
-        from: `"${appName} Weekly Update for ${user.username}" <updates@justabit.app>`,
+        from: `"${appName} Monthly Update for ${user.username}" <updates@justabit.app>`,
         to: user.email!,
-        subject: `Your Weekly Budget Update for ${appName}`,
-        react: React.createElement(WeeklyBudgetUpdateEmail, {
+        subject: `Your Monthly Budget Update for ${appName}`,
+        react: React.createElement(MonthlyBudgetUpdateEmail, {
           username: user.username,
           startDate,
           endDate,
-          totalIncome,
-          totalExpenses,
-          netBalance,
+          totalIncome: totalIncome.toFixed(2),
+          totalExpenses:totalExpenses.toFixed(2),
+          netBalance: netBalance.toFixed(2),
           envelopesSummary,
           appName,
         }),
@@ -61,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ success: true, message: `Sent to opted-in user ` + {userId} });
   } catch (error) {
-    console.error('Error sending weekly budget emails:', error);
+    console.error('Error sending monthly budget emails:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

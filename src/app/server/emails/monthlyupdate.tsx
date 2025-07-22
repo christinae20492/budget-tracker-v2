@@ -92,7 +92,7 @@ const summaryValue = {
 };
 
 const button = {
-  backgroundColor: '#6366F1',
+  backgroundColor: '#355329',
   borderRadius: '8px',
   color: '#ffffff',
   fontSize: '16px',
@@ -104,6 +104,14 @@ const button = {
   width: 'fit-content',
   margin: '30px auto',
 };
+
+const envelopeBox = {
+  border: '1px solid #A9ACA9',
+  marginBottom: '4px',
+  padding: '8px',
+  textAlign: 'center' as const,
+  borderRadius: '5px'
+}
 
 const footer = {
   color: '#8898aa',
@@ -177,13 +185,14 @@ export const MonthlyBudgetUpdateEmail: React.FC<MonthlyBudgetUpdateEmailProps> =
             <Column><Text style={summaryLabel}>Net Balance: </Text></Column>
             <Column><Text style={summaryValue}> {netBalance}</Text></Column>
           </Row>
+          
         </Section>
 
         {envelopesSummary && envelopesSummary.length > 0 && (
           <Section style={summaryBox}>
             <Text style={subHeading}>Envelope Breakdown:</Text>
             {envelopesSummary.map((envelope, index) => (
-              <div key={index} style={{ marginBottom: '15px' }}>
+              <div key={index} style={envelopeBox}>
                 <Text style={{ ...summaryValue, fontSize: '16px', marginBottom: '5px', fontWeight:"bold" }}>{envelope.name}</Text>
                 <Row style={summaryRow}>
                   <Column><Text style={summaryLabel}>Spent:</Text></Column>

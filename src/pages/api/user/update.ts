@@ -17,11 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const userId = session.user.id;
-  const { username, email, currentPassword, newPassword } = req.body;
+  const { username, email, currentPassword, newPassword, type } = req.body;
 
   const updateData: {
     username?: string;
     email?: string;
+    type?: string;
     password?: string;
   } = {};
 
@@ -52,6 +53,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (trimmedEmail !== user.email) {
         updateData.email = trimmedEmail;
       }
+    }
+
+    if (type !== 'Personal' && type !== 'Business' && type !== 'Shared') {
+      return res.status(400).json({message: 'Invalid value for "type" detected.'})
+    } else {
+      updateData.type = type;
     }
 
     if (newPassword !== undefined) {
@@ -86,6 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id: true,
         email: true,
         username: true,
+        type: true
       },
     });
 

@@ -5,6 +5,54 @@ import React from "react";
 export default function Changelog() {
   return (
     <div>
+      <section id="v4.5">
+        <div>
+          <h2 className="header">Version 4.5</h2>
+          <p>
+            Minor additions from version 4. We now provide full email services,
+            including weekly/monthly budget updates and app updates. You can
+            also auto populate the expense form with any recurring expenses.
+          </p>
+          <div className="border border-grey-300 rounded p-4 w-3/4 mx-auto my-4" id="email">
+            <h3 className="text-grey-600">
+              <FontAwesomeIcon icon={faHandPointRight} /> Email Services
+            </h3>
+            <p>
+              Just A Bit now has email capabilities, powered by Resend. For
+              major app updates, you will receive an email giving you a
+              shorthand of the new features - you can read up on anything in
+              detail on the new 'Updates' tab on the 'Account' page. You will
+              also receive weekly and/or monthly budget updates, but if that's
+              unconvenient for you, go to the 'Preferences' tab on your
+              'Account' page to unsubscribe from optional emails. Be mindful,
+              however, that emails may end up in your Spam or Junk folder, so
+              keep an eye out.
+            </p>
+          </div>
+          <div className="border border-grey-300 rounded p-4 w-3/4 mx-auto my-4" id="recexp">
+            <h3 className="text-grey-600">
+              <FontAwesomeIcon icon={faHandPointRight} /> Recurring Expenses
+            </h3>
+            <p>
+              Now, when you go to fill out an expense, you'll notice a 'Load
+              Expense' button. Clicking it will open a dropdown list which
+              features any expense that you've entered more than once. Selecting
+              an expense will automatically fill out the location, envelope, and
+              amount inputs, and if you click 'Load Expense' again after that,
+              it will submit the expense.
+            </p>
+          </div>
+          <div className="border border-grey-300 rounded p-4 w-3/4 mx-auto my-4" id="sec">
+            <h3 className="text-grey-600">
+              <FontAwesomeIcon icon={faHandPointRight} /> Security Updates
+            </h3>
+            <p>
+              If you're signed out and someone tries to access the app, they will now automatically
+              be redirected to the login page, regardless of which page they started out on.
+            </p>
+          </div>
+        </div>
+      </section>
       <section id="v4">
         <div>
           <h2 className="header">Version 4</h2>
@@ -28,19 +76,29 @@ export default function Changelog() {
               page in case you're ever in need.
             </p>
           </div>
-          <div className='border border-grey-300 rounded p-4 w-3/4 mx-auto my-4'>
-            <h3 className='text-grey-600'><FontAwesomeIcon icon={faHandPointRight} /> Mobile Support</h3>
-            <p>If you ever needed to quickly log a purchase while on the go, now you can! Just A Bit
-              can be accessed on your phone with a clean and simplified user interface that will work
-              on any mobile device - phone or tablet.
+          <div className="border border-grey-300 rounded p-4 w-3/4 mx-auto my-4">
+            <h3 className="text-grey-600">
+              <FontAwesomeIcon icon={faHandPointRight} /> Mobile Support
+            </h3>
+            <p>
+              If you ever needed to quickly log a purchase while on the go, now
+              you can! Just A Bit can be accessed on your phone with a clean and
+              simplified user interface that will work on any mobile device -
+              phone or tablet.
             </p>
           </div>
-          <div className='border border-grey-300 rounded p-4 w-3/4 mx-auto my-4'>
-            <h3 className='text-grey-600'><FontAwesomeIcon icon={faHandPointRight} /> Small Adjustments</h3>
-            <p>The modal on the calendar page had its position adjust so it could appear in the same spot more consistently. While
-              you're editing an expense or income, you can delete it from right there. Dark mode is now
-              controlled from the 'Account' page and not the toolbar. Added dark mode colors to more elements, and
-              accessibility titles to images. Added a welcome email for new users. New colors were added to the user interface.
+          <div className="border border-grey-300 rounded p-4 w-3/4 mx-auto my-4">
+            <h3 className="text-grey-600">
+              <FontAwesomeIcon icon={faHandPointRight} /> Small Adjustments
+            </h3>
+            <p>
+              The modal on the calendar page had its position adjust so it could
+              appear in the same spot more consistently. While you're editing an
+              expense or income, you can delete it from right there. Dark mode
+              is now controlled from the 'Account' page and not the toolbar.
+              Added dark mode colors to more elements, and accessibility titles
+              to images. Added a welcome email for new users. New colors were
+              added to the user interface.
             </p>
           </div>
         </div>

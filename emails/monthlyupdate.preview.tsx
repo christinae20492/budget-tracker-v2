@@ -1,6 +1,8 @@
 import * as React from 'react';
+// Make sure this import path is correct for your MonthlyBudgetUpdateEmail component
 import MonthlyBudgetUpdateEmail from './monthlyupdate';
 
+// Define the dummy data for the detailed envelopes summary
 const dummyEnvelopesSummary = [
   {
     name: "Groceries",
@@ -34,17 +36,32 @@ const dummyEnvelopesSummary = [
   },
 ];
 
-const welcomeEmailDummyProps = {
- username: 'TestUser',
-  startDate: '2025-01-01',
-  endDate: '2025-02-01',
-  totalIncome: '3500', 
-  totalExpenses: '2700',
-  netBalance: '800',
-  envelopesSummary:dummyEnvelopesSummary,
+// --- Corrected Dummy Props for MonthlyBudgetUpdateEmail ---
+// This object now matches the `MonthlyBudgetUpdateEmailProps` interface
+const monthlyBudgetUpdateDummyProps = {
+  username: 'TestUser',
+  startDate: '2025-01-01', // Date string
+  endDate: '2025-01-31',   // Date string (assuming a full month)
   appName: "BudgetBreeze",
+  summaryUrl: "https://budgetbreeze.com/dashboard/monthly-summary", // Example URL
+  unsubscribeUrl: "https://budgetbreeze.com/account?tab=Preferences", // Example URL
+
+  // The 'summary' object now contains numbers, as per SummaryDetails interface
+  summary: {
+    incomeTotals: 3500,
+    expenseTotals: 2700,
+    spendingDifference: 800, // incomeTotals - expenseTotals
+    spendingComparison: 15.5, // Example percentage change
+    highestEnvelope: "Groceries",
+    highestAmount: 250.75,
+    frequentEnvelope: "Groceries",
+    highestSpendingLocation: "SuperMart",
+    highestSpendingAmount: 350,
+  },
+  envelopesSummary: dummyEnvelopesSummary, // Optional, but included here
 };
 
-export default function WelcomeEmailPreview() {
-  return <MonthlyBudgetUpdateEmail {...welcomeEmailDummyProps} />;
+// Renamed the export function to reflect the email it's previewing
+export default function MonthlyBudgetUpdateEmailPreview() {
+  return <MonthlyBudgetUpdateEmail {...monthlyBudgetUpdateDummyProps} />;
 }

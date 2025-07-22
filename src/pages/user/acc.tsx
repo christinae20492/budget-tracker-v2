@@ -3,7 +3,6 @@ import { ConfirmModal } from "@/app/components/ui/ConfirmModal";
 import HelpPage from "@/app/components/ui/HelpPage";
 import Layout from "@/app/components/ui/Layout";
 import LoadingScreen from "@/app/components/ui/Loader";
-import { ToggleButton } from "@/app/components/ui/Toggle";
 import { deleteUserAccount } from "@/app/server/data";
 import {
   getUser,
@@ -23,6 +22,7 @@ export default function UserAccount() {
   const { data: session, status } = useSession();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [type, setType] = useState("");
   const [isProfileSaving, setIsProfileSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletion, setDeletion] = useState("");
@@ -52,7 +52,6 @@ export default function UserAccount() {
         typeof session.user.username === "string" &&
         typeof session.user.email === "string"
       ) {
-        console.log(session.user);
         setUsername(session.user.username);
         setEmail(session.user.email);
         if (userDetails) {
@@ -101,6 +100,10 @@ export default function UserAccount() {
     }
     if (email.trim() !== (session?.user?.email || "")) {
       updates.email = email.trim();
+    }
+
+    if (type) {
+      updates.type = type;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -459,6 +462,7 @@ export default function UserAccount() {
                       disabled={isProfileSaving}
                     />
                   </div>
+
                   <div className="mb-6">
                     <label
                       htmlFor="email"
@@ -475,6 +479,33 @@ export default function UserAccount() {
                       disabled={isProfileSaving}
                     />
                   </div>
+
+                  <div className="mb-6">
+                    <label
+                      htmlFor="profileType"
+                      className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
+                    >
+                      Change Profile Type:
+                    </label>
+                    <select
+                      id="profileType"
+                      name="profileType"
+                      value={type}
+                      onChange={(e) =>
+                        setType(
+                          e.target.value
+                        )
+                      }
+                      disabled={isProfileSaving}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-slate-900 dark:text-white"
+                    >
+                      <option value="" disabled></option>
+                      <option value="Personal">Personal</option>
+                      <option value="Business">Business</option>
+                      <option value="Shared">Shared</option>
+                    </select>
+                  </div>
+
                   <div className="text-center">
                     <button
                       type="submit"

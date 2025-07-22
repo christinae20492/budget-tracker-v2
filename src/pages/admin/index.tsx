@@ -13,7 +13,12 @@ import LoadingScreen from "@/app/components/ui/Loader";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { User } from "@/generated/prisma/client";
-import { getWeeklyExpenditureDetails, totalSpend } from "@/app/utils/expenses";
+import {
+  filterCurrentMonthExpenses,
+  getMonthlyExpenditureDetails,
+  getWeeklyExpenditureDetails,
+  totalSpend,
+} from "@/app/utils/expenses";
 import { Expense, Income, Envelope } from "@/app/utils/types";
 
 interface envelopeObj {
@@ -22,7 +27,7 @@ interface envelopeObj {
   allocated: string;
 }
 
-export default function AdminUpdateEmailSender() {
+export default function AdminEmailSender() {
   const [updateTitle, setUpdateTitle] = useState("");
   const [featuresJson, setFeaturesJson] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +35,8 @@ export default function AdminUpdateEmailSender() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [wselectedUserId, setWSelectedUserId] = useState<string>("");
+  const [mselectedUserId, setMSelectedUserId] = useState<string>("");
   const [users, setUsers] = useState<User[]>([]);
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -82,8 +88,8 @@ export default function AdminUpdateEmailSender() {
   }, [session, status]);
 
   useEffect(() => {
-    const fetchAndCalculateBudget = async () => {
-      if (!selectedUserId) {
+    const fetchWeekly = async () => {
+      if (!wselectedUserId) {
         setStartDate("");
         setEndDate("");
         setTotalIncome(0);
@@ -98,7 +104,7 @@ export default function AdminUpdateEmailSender() {
       setIsFetchingFinancialData(true);
       setStatusMessage("Fetching user's financial data...");
       try {
-        const response = await fetch(`/api/data/${selectedUserId}`);
+        const response = await fetch(`/api/data/${wselectedUserId}`);
         if (response.ok) {
           const { incomes, expenses, envelopes } = await response.json();
           setUserIncomes(incomes);
@@ -123,11 +129,11 @@ export default function AdminUpdateEmailSender() {
               (env: Envelope) => env.id === envelopeId
             );
 
-              userEnvelopeData.push({
-                name: envelope.title ? envelope.title : 'n/a',
-                spent: totalSpend(envelope, "weekly").toString(),
-                allocated: envelope.budget ? envelope.budget.toString() : '0',
-              });
+            userEnvelopeData.push({
+              name: envelope.title ? envelope.title : "n/a",
+              spent: totalSpend(envelope, "weekly").toString(),
+              allocated: envelope.budget ? envelope.budget.toString() : "0",
+            });
           };
 
           const formattedTopCategories = weeklyDetails.frequentEnvelope
@@ -182,9 +188,122 @@ export default function AdminUpdateEmailSender() {
         setIsFetchingFinancialData(false);
       }
     };
+    const fetchMonthly = async () => {
+      if (!mselectedUserId) {
+        setStartDate("");
+        setEndDate("");
+        setTotalIncome(0);
+        setTotalExpenses(0);
+        setRemainingBudget(0);
+        setTopCategories("");
+        setUserIncomes([]);
+        setUserExpenses([]);
+        return;
+      }
 
-    fetchAndCalculateBudget();
-  }, [selectedUserId]);
+      setIsFetchingFinancialData(true);
+      setStatusMessage("Fetching user's financial data...");
+      try {
+        const response = await fetch(`/api/data/${mselectedUserId}`);
+        if (response.ok) {
+          const { incomes, expenses, envelopes } = await response.json();
+
+          const filteredExpenses = filterCurrentMonthExpenses(expenses);
+          const filteredIncomes = filterCurrentMonthExpenses(incomes);
+
+          setUserIncomes(filteredIncomes);
+          setUserExpenses(filteredExpenses);
+          setEnvelopes(envelopes);
+
+          const monthlyDetails = getMonthlyExpenditureDetails(
+            filteredIncomes,
+            filteredExpenses
+          );
+
+          setTotalIncome(monthlyDetails.incomeTotals);
+          setTotalExpenses(monthlyDetails.expenseTotals);
+          setRemainingBudget(monthlyDetails.spendingDifference);
+
+          const summarizeEnvelopeSpending = (envelopes: Envelope[]) => {
+
+           let data = []; 
+            for (const envelope of envelopes) {
+              if (!envelope.expenses || envelope.expenses.length === 0) {
+                continue;
+              }
+
+              const exp: Expense[] = filterCurrentMonthExpenses(envelope.expenses)
+
+              const totalSpent = exp.reduce(
+                (sum, expense) => sum + (expense.amount || 0),
+                0
+              );
+
+              if (totalSpent > 1) {
+                data.push({
+                  name: envelope.title,
+                  allocated: envelope.budget.toFixed(2),
+                  spent: totalSpent.toFixed(2),
+                });
+              }
+            }
+
+            return data;
+          };
+
+          const rawdata = summarizeEnvelopeSpending(envelopes);
+          setTopCategories(monthlyDetails.frequentEnvelope);
+          setUserEnvelopeData(rawdata);
+
+          const now = new Date();
+          const today = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+          );
+          const oneMonthAgo = new Date(today);
+          oneMonthAgo.setDate(today.getDate() - 30);
+
+          setStartDate(oneMonthAgo.toISOString().split("T")[0]);
+          setEndDate(today.toISOString().split("T")[0]);
+
+          setStatusMessage("Financial data loaded and calculated.");
+        } else {
+          const errorData = await response.json();
+          setStatusMessage(
+            `Error fetching financial data: ${errorData.message || "Unknown error"}`
+          );
+          console.error("Failed to fetch user financial data:", errorData);
+          setStartDate("");
+          setEndDate("");
+          setTotalIncome(0);
+          setTotalExpenses(0);
+          setRemainingBudget(0);
+          setTopCategories("");
+          setUserIncomes([]);
+          setUserExpenses([]);
+        }
+      } catch (error) {
+        setStatusMessage(
+          "An unexpected error occurred while fetching financial data."
+        );
+        console.error("Error fetching financial data:", error);
+        setStartDate("");
+        setEndDate("");
+        setTotalIncome(0);
+        setTotalExpenses(0);
+        setRemainingBudget(0);
+        setTopCategories("");
+        setUserIncomes([]);
+        setUserExpenses([]);
+      } finally {
+        setIsFetchingFinancialData(false);
+      }
+    };
+
+    fetchWeekly();
+    fetchMonthly();
+  }, [wselectedUserId, mselectedUserId]);
 
   const handleSendEmails = async () => {
     setLoading(true);
@@ -215,10 +334,9 @@ export default function AdminUpdateEmailSender() {
     }
   };
 
-    const handleSendEmailtoAll = async () => {
+  const handleSendEmailtoAll = async () => {
     setLoading(true);
     try {
-
       progressToast("Sending emails to all users...");
 
       const response = await fetch("/api/email/urgent", {
@@ -243,7 +361,7 @@ export default function AdminUpdateEmailSender() {
   };
 
   const handleSendWeeklyBudgetUpdate = async () => {
-    if (!selectedUserId || !startDate || !endDate) {
+    if (!wselectedUserId || !startDate || !endDate) {
       setStatusMessage("Please select a user and ensure dates are populated.");
       return;
     }
@@ -258,18 +376,59 @@ export default function AdminUpdateEmailSender() {
       .map((name) => ({ name, amount: 0 }));
 
     try {
-      const response = await fetch("/api/email/opt", {
+      const response = await fetch("/api/email/weekly", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: selectedUserId,
+          userId: wselectedUserId,
           startDate,
           endDate,
           totalIncome,
           totalExpenses,
-          remainingBudget,
+          netBalance: remainingBudget,
+          envelopesSummary: userEnvelopeData,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setStatusMessage(`Success: ${data.message}`);
+      } else {
+        setStatusMessage(`Error: ${data.message || "Failed to send email"}`);
+      }
+    } catch (error) {
+      console.error("Error sending budget update:", error);
+      setStatusMessage("An unexpected error occurred.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSendMonthlyBudgetUpdate = async () => {
+    if (!mselectedUserId || !startDate || !endDate) {
+      setStatusMessage("Please select a user and ensure dates are populated.");
+      return;
+    }
+
+    setIsSending(true);
+    setStatusMessage("Sending monthly budget update...");
+
+
+    try {
+      const response = await fetch("/api/email/monthly", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: mselectedUserId,
+          startDate,
+          endDate,
+          totalIncome,
+          totalExpenses,
+          netBalance: remainingBudget,
           envelopesSummary: userEnvelopeData,
         }),
       });
@@ -312,9 +471,12 @@ export default function AdminUpdateEmailSender() {
 
       <div className="text-center">
         <h1 className="header">Send Email to All</h1>
-        <p className="text-center text-grey-500">**Sends whatever email is currently allocated to the <span className="font-semibold">urgent.ts</span> api endpoint. Will be sent to all users</p>
-        <button onClick={handleSendEmailtoAll}
-        className="button">
+        <p className="text-center text-grey-500">
+          **Sends whatever email is currently allocated to the{" "}
+          <span className="font-semibold">urgent.ts</span> api endpoint. Will be
+          sent to all users
+        </p>
+        <button onClick={handleSendEmailtoAll} className="button" disabled>
           Send Email to All
         </button>
       </div>
@@ -346,7 +508,6 @@ export default function AdminUpdateEmailSender() {
   {
     "title": "Feature 1",
     "description": "Description of feature 1",
-    "imageUrl": "https://...",
     "linkUrl": "https://..."
   },
   ...
@@ -389,8 +550,8 @@ export default function AdminUpdateEmailSender() {
             <label htmlFor="userSelect">Select User:</label>
             <select
               id="userSelect"
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
+              value={wselectedUserId}
+              onChange={(e) => setWSelectedUserId(e.target.value)}
               disabled={isSending || isFetchingFinancialData}
               style={{ marginLeft: "10px", padding: "8px" }}
             >
@@ -511,7 +672,7 @@ export default function AdminUpdateEmailSender() {
             onClick={handleSendWeeklyBudgetUpdate}
             disabled={
               isSending ||
-              !selectedUserId ||
+              !wselectedUserId ||
               isFetchingFinancialData ||
               (totalIncome === 0 && totalExpenses === 0)
             }
@@ -525,6 +686,155 @@ export default function AdminUpdateEmailSender() {
             }}
           >
             {isSending ? "Sending..." : "Send Weekly Budget Update"}
+          </button>
+          {statusMessage && (
+            <p
+              style={{
+                marginTop: "10px",
+                color: statusMessage.startsWith("Error") ? "red" : "green",
+              }}
+            >
+              {statusMessage}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <h2 className="text-center">Send Personal Monthly Budget Update</h2>
+          <div style={{ marginBottom: "15px" }}>
+            <label htmlFor="userSelect">Select User:</label>
+            <select
+              id="userSelect"
+              value={mselectedUserId}
+              onChange={(e) => setMSelectedUserId(e.target.value)}
+              disabled={isSending || isFetchingFinancialData}
+              style={{ marginLeft: "10px", padding: "8px" }}
+            >
+              <option value="">-- Select a User --</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.username || user.email} ({user.id})
+                </option>
+              ))}
+            </select>
+            {isFetchingFinancialData && (
+              <span style={{ marginLeft: "10px" }}>Loading data...</span>
+            )}
+          </div>
+
+          <div style={{ marginBottom: "15px", display: "flex", gap: "10px" }}>
+            <div>
+              <label htmlFor="startDate">Start Date:</label>
+              <input
+                type="date"
+                id="startDate"
+                value={startDate}
+                readOnly
+                disabled={isSending || isFetchingFinancialData}
+                style={{
+                  marginLeft: "5px",
+                  padding: "8px",
+                  cursor: "not-allowed",
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="endDate">End Date:</label>
+              <input
+                type="date"
+                id="endDate"
+                value={endDate}
+                readOnly
+                disabled={isSending || isFetchingFinancialData}
+                style={{
+                  marginLeft: "5px",
+                  padding: "8px",
+                  cursor: "not-allowed",
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: "15px", display: "flex", gap: "10px" }}>
+            <div>
+              <label htmlFor="totalIncome">Total Income:</label>
+              <input
+                type="number"
+                id="totalIncome"
+                value={totalIncome}
+                readOnly
+                disabled={isSending || isFetchingFinancialData}
+                style={{
+                  marginLeft: "5px",
+                  padding: "8px",
+                  cursor: "not-allowed",
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="totalExpenses">Total Expenses:</label>
+              <input
+                type="number"
+                id="totalExpenses"
+                value={totalExpenses}
+                readOnly
+                disabled={isSending || isFetchingFinancialData}
+                style={{
+                  marginLeft: "5px",
+                  padding: "8px",
+                  cursor: "not-allowed",
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="remainingBudget">Remaining Budget:</label>
+              <input
+                type="number"
+                id="remainingBudget"
+                value={remainingBudget}
+                readOnly
+                disabled={isSending || isFetchingFinancialData}
+                style={{
+                  marginLeft: "5px",
+                  padding: "8px",
+                  cursor: "not-allowed",
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="h-screen overflow-y-scroll text-center">
+          {userEnvelopeData.length > 0 && (
+            <div>
+              {userEnvelopeData.map((env)=>(
+                <div key={env.name} className="w-2/4 h-40 bg-grey-50 border border-grey-300 rounded my-3">
+                  <p className="font-bold">{env.name}</p>
+                  <p>Amount Spent: {env.spent}</p>
+                  <p>Allocated: {env.allocated}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          </div>
+
+          <button
+            onClick={handleSendMonthlyBudgetUpdate}
+            disabled={
+              isSending ||
+              !mselectedUserId ||
+              isFetchingFinancialData ||
+              (totalIncome === 0 && totalExpenses === 0)
+            }
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            {isSending ? "Sending..." : "Send Monthly Budget Update"}
           </button>
           {statusMessage && (
             <p

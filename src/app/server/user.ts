@@ -1,6 +1,7 @@
 export interface UserProfileUpdates {
   username?: string;
   email?: string;
+  type?: string;
 }
 
 interface PasswordChangeData {

@@ -49,6 +49,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       select: {
         id: true,
         title: true,
+        budget: true,
+        expenses: true,
+        color: true,
       },
     });
 

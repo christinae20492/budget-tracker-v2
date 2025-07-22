@@ -13,15 +13,35 @@ import {
   Row,
 } from '@react-email/components';
 
+// Assuming these interfaces are defined elsewhere or in the same file for demonstration
+export interface SummaryDetails {
+  incomeTotals: number;
+  expenseTotals: number;
+  spendingDifference: number; // This is your netBalance
+  spendingComparison: number; // Percentage change
+  highestEnvelope: string;
+  highestAmount: number;
+  frequentEnvelope: string;
+  highestSpendingLocation: string;
+  highestSpendingAmount: number;
+}
+
+// Keep envelopesSummary separate if it provides a detailed list beyond SummaryDetails
+interface DetailedEnvelopeSummary {
+  name: string;
+  spent: string; // These are still strings, assuming they are pre-formatted
+  allocated: string;
+}
+
 interface MonthlyBudgetUpdateEmailProps {
   username: string;
-  startDate: string;
-  endDate: string;
-  totalIncome: string;
-  totalExpenses: string;
-  netBalance: string;
-  envelopesSummary: Array<{ name: string; spent: string; allocated: string }>;
+  startDate: string; // Date string for display range
+  endDate: string;   // Date string for display range
+  summary: SummaryDetails; // The new prop for overall summary
+  envelopesSummary?: DetailedEnvelopeSummary[]; // Optional: for detailed envelope breakdown
   appName: string;
+  summaryUrl: string; // URL for the "View Summary" button
+  unsubscribeUrl: string; // URL for the unsubscribe link
 }
 
 const main = {
@@ -89,10 +109,11 @@ const summaryLabel = {
 const summaryValue = {
   color: '#1a202c',
   fontSize: '15px',
+  fontWeight: 'bold' as const, // Added bold for values for better readability
 };
 
 const button = {
-  backgroundColor: '#6366F1',
+  backgroundColor: '#355329',
   borderRadius: '8px',
   color: '#ffffff',
   fontSize: '16px',
@@ -105,6 +126,14 @@ const button = {
   margin: '30px auto',
 };
 
+const envelopeBox = {
+  border: '1px solid #A9ACA9',
+  marginBottom: '4px',
+  padding: '8px',
+  textAlign: 'center' as const,
+  borderRadius: '5px'
+}
+
 const footer = {
   color: '#8898aa',
   fontSize: '12px',
@@ -112,113 +141,147 @@ const footer = {
   textAlign: 'center' as const,
 };
 
-const stringifyDate=(dateString: string)=>{
+// Helper function to format numbers as currency strings
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD', // You might want to make this dynamic based on user's currency setting
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
+// Helper function to stringify dates (as provided by you)
+const stringifyDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
-
     if (isNaN(date.getTime())) {
       console.warn(`Invalid date string provided: "${dateString}". Returning empty string.`);
-      return ""; 
+      return "";
     }
-
     const options: Intl.DateTimeFormatOptions = {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     };
-
     return date.toLocaleDateString('en-US', options);
-
   } catch (error) {
     console.error(`Error processing date string "${dateString}":`, error);
     return "";
   }
-}
+};
 
 export const MonthlyBudgetUpdateEmail: React.FC<MonthlyBudgetUpdateEmailProps> = ({
   username,
   startDate,
   endDate,
-  totalIncome,
-  totalExpenses,
-  netBalance,
-  envelopesSummary,
+  summary, // Now receiving the SummaryDetails object
+  envelopesSummary, // Still receiving optional detailed envelopes
   appName,
-}) => (
-  <Html>
-    <Head />
-    <Body style={main}>
-      <Container style={container}>
-        <Text style={heading}>Your Monthly Budget Update for {appName}</Text>
+  summaryUrl, // New prop for the button link
+}) => {
+  // Determine if there's any financial activity to report
+  const hasActivity = summary.incomeTotals > 0 || summary.expenseTotals > 0;
 
-        <Text style={paragraph}>Hi {username},</Text>
-        <Text style={paragraph}>
-          Thank you for your continued use of {appName}! Here's a quick summary of your financial activity from {stringifyDate(startDate)} to {stringifyDate(endDate)}.
-        </Text>
+  return (
+    <Html>
+      <Head />
+      <Body style={main}>
+        <Container style={container}>
+          <Text style={heading}>Your Monthly Budget Update for {appName}</Text>
 
-        <Section style={summaryBox}>
-          <Text style={subHeading}>Overall Summary:</Text>
-          <Row style={summaryRow}>
-            <Column><Text style={summaryLabel}>Total Income: </Text></Column>
-            <Column>
-            {totalIncome === '0' ? (
-              <Text style={summaryValue}>Nothing to report for this week.</Text>  
-            ) : (
-              <Text style={summaryValue}> {totalIncome}</Text>
-            )}
-            </Column>
-          </Row>
-          <Row style={summaryRow}>
-            <Column><Text style={summaryLabel}>Total Expenses: </Text></Column>
-            <Column><Text style={summaryValue}> {totalExpenses}</Text></Column>
-          </Row>
-          <Hr style={hr} />
-          <Row style={summaryRow}>
-            <Column><Text style={summaryLabel}>Net Balance: </Text></Column>
-            <Column><Text style={summaryValue}> {netBalance}</Text></Column>
-          </Row>
-        </Section>
+          <Text style={paragraph}>Hi {username},</Text>
+          <Text style={paragraph}>
+            Thank you for your continued use of {appName}! Here's a quick summary of your financial activity from {stringifyDate(startDate)} to {stringifyDate(endDate)}.
+          </Text>
 
-        {envelopesSummary && envelopesSummary.length > 0 && (
           <Section style={summaryBox}>
-            <Text style={subHeading}>Envelope Breakdown:</Text>
-            {envelopesSummary.map((envelope, index) => (
-              <div key={index} style={{ marginBottom: '15px' }}>
-                <Text style={{ ...summaryValue, fontSize: '16px', marginBottom: '5px', fontWeight:"bold" }}>{envelope.name}</Text>
+            <Text style={subHeading}>Overall Summary:</Text>
+            {!hasActivity ? (
+              <Text style={{ ...paragraph, textAlign: 'center', fontStyle: 'italic' }}>
+                Nothing to report for this period.
+              </Text>
+            ) : (
+              <>
                 <Row style={summaryRow}>
-                  <Column><Text style={summaryLabel}>Spent:</Text></Column>
-                  <Column><Text style={summaryValue}>{envelope.spent}</Text></Column>
+                  <Column><Text style={summaryLabel}>Total Income: </Text></Column>
+                  <Column><Text style={summaryValue}>{formatCurrency(summary.incomeTotals)}</Text></Column>
                 </Row>
                 <Row style={summaryRow}>
-                  <Column><Text style={summaryLabel}>Allocated:</Text></Column>
-                  <Column><Text style={summaryValue}>{envelope.allocated}</Text></Column>
+                  <Column><Text style={summaryLabel}>Total Expenses: </Text></Column>
+                  <Column><Text style={summaryValue}>{formatCurrency(summary.expenseTotals)}</Text></Column>
                 </Row>
-              </div>
-            ))}
+                <Hr style={hr} />
+                <Row style={summaryRow}>
+                  <Column><Text style={summaryLabel}>Net Balance: </Text></Column>
+                  <Column><Text style={summaryValue}>{formatCurrency(summary.spendingDifference)}</Text></Column>
+                </Row>
+                {/* Optional: Add spending comparison if relevant for monthly */}
+                {summary.spendingComparison !== 0 && (
+                    <Row style={summaryRow}>
+                        <Column><Text style={summaryLabel}>Spending Change: </Text></Column>
+                        <Column><Text style={summaryValue}>{summary.spendingComparison.toFixed(2)}%</Text></Column>
+                    </Row>
+                )}
+                {/* Optional: Display highest spending envelope/location from SummaryDetails */}
+                {summary.highestEnvelope && summary.highestAmount > 0 && (
+                    <Row style={summaryRow}>
+                        <Column><Text style={summaryLabel}>Highest Envelope: </Text></Column>
+                        <Column><Text style={summaryValue}>{summary.highestEnvelope} ({formatCurrency(summary.highestAmount)})</Text></Column>
+                    </Row>
+                )}
+                {summary.highestSpendingLocation && summary.highestSpendingAmount > 0 && (
+                    <Row style={summaryRow}>
+                        <Column><Text style={summaryLabel}>Highest Location: </Text></Column>
+                        <Column><Text style={summaryValue}>{summary.highestSpendingLocation} ({formatCurrency(summary.highestSpendingAmount)})</Text></Column>
+                    </Row>
+                )}
+              </>
+            )}
           </Section>
-        )}
 
-        <Text style={paragraph}>
-          For a more detailed look at your budget and financial progress, log in and view your monthly summary:
-        </Text>
+          {/* Detailed Envelope Breakdown (if provided as a separate prop) */}
+          {envelopesSummary && envelopesSummary.length > 0 && (
+            <Section style={summaryBox}>
+              <Text style={subHeading}>Envelope Breakdown:</Text>
+              {envelopesSummary.map((envelope, index) => (
+                <div key={index} style={envelopeBox}>
+                  <Text style={{ ...summaryValue, fontSize: '16px', marginBottom: '5px', fontWeight:"bold" }}>{envelope.name}</Text>
+                  <Row style={summaryRow}>
+                    <Column><Text style={summaryLabel}>Spent:</Text></Column>
+                    <Column><Text style={summaryValue}>{envelope.spent}</Text></Column>
+                  </Row>
+                  <Row style={summaryRow}>
+                    <Column><Text style={summaryLabel}>Allocated:</Text></Column>
+                    <Column><Text style={summaryValue}>{envelope.allocated}</Text></Column>
+                  </Row>
+                </div>
+              ))}
+            </Section>
+          )}
 
-        <Section style={{ textAlign: 'center' }}>
-          <Button style={button} href={"justabit.app/monthly-summary"}>
-           View Summary
-          </Button>
-        </Section>
+          <Text style={paragraph}>
+            For a more detailed look at your budget and financial progress, log in and view your monthly summary:
+          </Text>
 
-        <Hr style={hr} />
+          <Section style={{ textAlign: 'center' }}>
+            <Button style={button} href={summaryUrl}>
+              View Summary
+            </Button>
+          </Section>
 
-        <Text style={footer}>
-          This is an automated email. You are receiving this email because you opted in to weekly budget updates. To manage your email preferences or unsubscribe, please visit your account page.
-        </Text>
-        <Text style={footer}>
-          © {new Date().getFullYear()} {appName}. All rights reserved.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-);
+          <Hr style={hr} />
+
+          <Text style={footer}>
+            This is an automated email. You are receiving this email because you opted in to budget updates. To manage your email preferences or unsubscribe, please visit: <Link href={'justabit.app/acc/'} style={{ color: '#8898aa', textDecoration: 'underline' }}>Unsubscribe</Link>
+          </Text>
+          <Text style={footer}>
+            © {new Date().getFullYear()} {appName}. All rights reserved.
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+};
 
 export default MonthlyBudgetUpdateEmail;
