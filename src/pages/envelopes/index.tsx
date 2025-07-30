@@ -129,7 +129,7 @@ export default function EnvelopesPage() {
     await fetchData();
   };
 
-  const calculateTotalSpentToday = () => {
+  const calculateTotalSpentToday = (expenses: Expense[]) => {
     const getFormattedDate = () => {
       const today = new Date();
       const year = today.getFullYear();
@@ -139,14 +139,15 @@ export default function EnvelopesPage() {
       return `${year}-${month}-${day}`;
     };
     const todayFormatted = getFormattedDate();
-    console.log(todayFormatted);
 
-    const total = filteredExpenses
-      .filter((expense) => {
+    const rawdata = expenses
+      .filter((expense: Expense) => {
         const expenseDatePart = expense.date ? String(expense.date) : "";
         return expenseDatePart === todayFormatted;
       })
-      .reduce((currentTotal, expense) => currentTotal + expense.amount, 0);
+
+      const total = rawdata
+      .reduce((currentTotal: any, expense: Expense) => currentTotal + expense.amount, 0);
 
     return total;
   };
@@ -294,7 +295,7 @@ export default function EnvelopesPage() {
             className="hover:text-blue-300"
           />
         </span>
-        Total Daily Spending: ${calculateTotalSpentToday().toFixed(2)}
+        Total Daily Spending: ${calculateTotalSpentToday(filteredExpenses).toFixed(2)}
       </h3>
 
       <main className="w-11/12 border border-gray-200 mx-auto mt-6 p-3">

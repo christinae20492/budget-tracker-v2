@@ -24,6 +24,7 @@ export default function UserAccount() {
   const [email, setEmail] = useState("");
   const [type, setType] = useState("");
   const [isProfileSaving, setIsProfileSaving] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deletion, setDeletion] = useState("");
   const [tab, setTab] = useState("Account");
@@ -166,6 +167,11 @@ export default function UserAccount() {
     }
   };
 
+  const setMobileTab = (tab: string) =>{
+    setTab(tab);
+    setMobileMenu(false);
+  }
+
   const deletionInput = () => {
     return (
       <input
@@ -205,10 +211,74 @@ export default function UserAccount() {
         />
       )}
 
+      {mobileMenu && (
+        <div className="w-full h-full">
+        <ul className="flex flex-col justify-center -mb-px border-b-2 border-gray-200 dark:border-gray-500 cursor-pointer">
+            <li
+              onClick={() => setMobileTab("Account")}
+              className={`acc-tabs ${
+                tab === "Account"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
+              }`}
+            >
+              Account
+            </li>
+            <li
+              onClick={() => setMobileTab("Preferences")}
+              className={`acc-tabs ${
+                tab === "Preferences"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
+              }`}
+            >
+              Preferences
+            </li>
+            <li
+              onClick={() => setMobileTab("Actions")}
+              className={`acc-tabs ${
+                tab === "Actions"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
+              }`}
+            >
+              Actions
+            </li>
+            <li
+              onClick={() => setMobileTab("Updates")}
+              className={`acc-tabs ${
+                tab === "Updates"
+                  ? "bg-grey-150 rounded dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
+              }`}
+            >
+              Updates
+            </li>
+            <li
+              onClick={() => setMobileTab("Help")}
+              className={`acc-tabs ${
+                tab === "Help"
+                  ? "bg-grey-150 rounded hover:bg-inherit dark:bg-black dark:text-white"
+                  : "bg-white dark:bg-grey-400"
+              }`}
+            >
+              Help
+            </li>
+            <li
+              onClick={handleSignOut}
+              className="acc-tabs hover:bg-red-500 dark:hover:bg-red-800"
+            >
+              Signout
+            </li>
+          </ul>
+          </div>
+      )}
+
       <div className="xl:m-4 relative">
         <h1 className="header">Hello, {session?.user.username}</h1>
-        <aside className="md:inline md:overflow-auto overflow-x-scroll overflow-y-hidden">
-          <ul className="flex flex-nowrap justify-center -mb-px border-b border-gray-200 dark:border-gray-500 cursor-pointer">
+        <aside className="inline overflow-auto overflow-y-hidden w-full mx-auto">
+          <span onClick={()=>{setMobileMenu(!mobileMenu)}} className="md:invisible visible px-6 py-2 border border-grey-150 rounded ml-3">{mobileMenu ? "Close Menu" : "Open Menu"}</span>
+          <ul className="flex flex-nowrap justify-center -mb-px border-b border-gray-200 dark:border-gray-500 cursor-pointer md:visible invisible">
             <li
               onClick={() => setTab("Account")}
               className={`acc-tabs ${
@@ -298,7 +368,7 @@ export default function UserAccount() {
               </button>
             </main>
           ) : tab === "Updates" ? (
-            <main className="md:w-3/5 dark:bg-grey-500">
+            <main className="md:w-3/5 md:mx-0 mx-3 dark:bg-grey-500">
               <p className="text-center text-grey-300">
                 **Emails can potentially be sent to your Spam/Junk folder. Keep
                 an eye out!
